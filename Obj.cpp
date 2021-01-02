@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream> 
+#include <GL\glew.h>
 #include <GL/freeglut.h>
 
 static inline std::string& Ltrim(std::string& str)
@@ -171,8 +172,31 @@ Obj::~Obj()
 
 void Obj::Draw()
 {
+    glPushMatrix();
+    glTranslatef(position.x, position.y, position.z);
+    glRotatef(rotation.x.AsDegrees(), 1.f, 0.f, 0.f);
+    glRotatef(rotation.y.AsDegrees(), 0.f, 1.f, 0.f);
+    glRotatef(rotation.z.AsDegrees(), 0.f, 0.f, 1.f);
+    glScalef(scale.x, scale.y, scale.z);
+
     for (auto it = materials.begin(); it != materials.end(); it++)
         (*it).Draw();
+    glPopMatrix();
+}
+
+Vector3& Obj::GetPosition()
+{
+    return position;
+}
+
+Angle3& Obj::GetRotation()
+{
+    return rotation;
+}
+
+Vector3& Obj::GetScale()
+{
+    return scale;
 }
 
 Obj::Material& Obj::GetMaterial(std::string name)
@@ -280,6 +304,8 @@ Obj::Material::Material(Obj* parent, std::string name)
 {
     this->parent = parent;
     this->name = name;
+    textureSMode = GL_REPEAT;
+    textureTMode = GL_REPEAT;
 }
 
 Obj::Material::~Material()
@@ -310,6 +336,21 @@ void Obj::Material::SetTexture(const std::string& fileName)
     texture = new Texture(fileName);
 }
 
+void Obj::Material::SetTextureRepeatMode(TextureDirection dir, int mode)
+{
+    switch (dir)
+    {
+    case Obj::Material::TextureDirection::DIR_S:
+        textureSMode = mode;
+        break;
+    case Obj::Material::TextureDirection::DIR_T:
+        textureTMode = mode;
+        break;
+    default:
+        break;
+    }
+}
+
 void Obj::Material::Draw()
 {
     glDisable(GL_ALPHA_TEST);
@@ -327,6 +368,9 @@ void Obj::Material::Draw()
     }
     else
         glBindTexture(GL_TEXTURE_2D, 0);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, textureSMode);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, textureTMode);
 
     for (auto it = faces.begin(); it != faces.end(); it++) {
         Face &currFace = *it;

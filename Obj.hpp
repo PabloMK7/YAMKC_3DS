@@ -25,12 +25,18 @@ public:
 	class Material
 	{
 	public:
+		enum class TextureDirection
+		{
+			DIR_S,
+			DIR_T
+		};
 		Material(Obj* parent, std::string name);
 		~Material();
 		std::string& GetName();
 		void AddFace(const Face& face);
 		void SetColor(const Color& color);
 		void SetTexture(const std::string& fileName);
+		void SetTextureRepeatMode(TextureDirection dir, int mode);
 		void Draw();
 
 	private:
@@ -39,11 +45,18 @@ public:
 		Obj* parent;
 		std::string name;
 		std::vector<Obj::Face> faces;
+		int textureSMode;
+		int textureTMode;
 	};
 
 	Obj(std::string filename);
 	~Obj();
+
 	void Draw();
+	Vector3& GetPosition();
+	Angle3& GetRotation();
+	Vector3& GetScale();
+	Material& GetMaterial(std::string name);
 
 private:
 	std::string matLib;
@@ -51,8 +64,10 @@ private:
 	std::vector<Vector3> vertices;
 	std::vector<Vector3> normals;
 	std::vector<Vector2> texCoords;
-	Material& GetMaterial(std::string name);
 	void LoadMatlib(std::string filename);
+	Vector3 position;
+	Angle3 rotation;
+	Vector3 scale = Vector3(1.f, 1.f, 1.f);
 protected:
 	Vector3& GetVertexFromID(int id);
 	Vector2& GetTexCoordFromID(int id);

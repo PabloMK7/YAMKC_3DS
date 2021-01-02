@@ -1,19 +1,21 @@
 #include <iostream>
 #include <functional>
 #include <string>
+#include <GL\glew.h>
 #include <GL\freeglut.h>
 #include "Color.hpp"
 #include "Obj.hpp"
+#include "Kart.hpp"
 #include <ctime>
 #include <freeimage/FreeImage.h>
 #pragma comment(lib, "FreeImage.lib")
 
-// Constantes matematicas y FPS
-#define PI 3.14159265358979323846f
+// Constantes FPS
 #define FPS 60
 #define SPF 1.f / FPS
 
-Obj* courseModel = NULL;
+Obj* courseModel = nullptr;
+Kart* playerKart = nullptr;
 
 // Inicialización de los objetos.
 void init() {
@@ -31,6 +33,12 @@ void init() {
     catch (const char* msg) {
         std::cout << std::string("Failed to load course model: ") + msg << std::endl;
     }
+
+    playerKart = new Kart("data/driver/kart.obj", "data/driver/wheel.obj", "data/driver/driver.obj", "data/driver/shadow.obj");
+    playerKart->GetScale() = Vector3(1.2f, 1.2f, 1.2f);
+    playerKart->GetDriverObj()->GetMaterial("mat_driver_body").SetTextureRepeatMode(Obj::Material::TextureDirection::DIR_S, GL_MIRRORED_REPEAT);
+    playerKart->GetDriverObj()->GetMaterial("mat_driver_body").SetTextureRepeatMode(Obj::Material::TextureDirection::DIR_T, GL_MIRRORED_REPEAT);
+    playerKart->GetDriverObj()->GetMaterial("mat_driver_eyes").SetTextureRepeatMode(Obj::Material::TextureDirection::DIR_S, GL_MIRRORED_REPEAT);
 }
 
 // Destrucción de los objetos.
@@ -56,11 +64,12 @@ void display()
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-
-    gluLookAt(0, 50, CAMERADIST, 0, 50, 0, 0, 1, 0);
+    
+    playerKart->UpdateCamera();
 
     // Draw functions
     if (courseModel) courseModel->Draw();
+    if (playerKart) playerKart->Draw();
 
     glutSwapBuffers();
 }
@@ -78,13 +87,10 @@ void onTimer(int val) {
 
     // Llamada a la función calc con el tiempo transcurrido a cada objeto.
     // De esta forma, cada objeto es responsable de actualizar sus parámetros.
-    
-    
+    playerKart->Calc(elapsed);
 
     glutPostRedisplay();
 }
-
-static bool spacePressed = false;
 
 // Función de cambio de tamaño de la pantalla.
 void reshape(GLint w, GLint h)
@@ -92,11 +98,8 @@ void reshape(GLint w, GLint h)
     glViewport(0, 0, w, h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    float ratio = (float)w / h;
-
-    // Mantener el angulo de visión para que la esfera unidad toque los límites verticales.
-    // https://i.imgur.com/79iq15m.png
-    gluPerspective(std::asinf(UNITRADIUS/CAMERADIST) * 2.0 * (180.0 / PI), ratio, 20, 10000);
+    
+    playerKart->UpdateViewPort(w, h);
 }
 
 // Función ejecutada cuando se pulsa una tecla especial.
@@ -104,10 +107,10 @@ void pressSpecialKey(int key, int x, int y)
 {
     switch (key)
     {
-    case 100:  xPressed = 1; break; // Izquierda
-    case 102:  xPressed = -1; break; // Derecha
-    case 101:  yPressed = 1;  break; // Arriba
-    case 103:  yPressed = -1;  break; // Abajo
+    case 100:  playerKart->KeyPress(Kart::Key::KEY_Left); break; // Izquierda
+    case 102:  playerKart->KeyPress(Kart::Key::KEY_Right); break; // Derecha
+    case 101:  playerKart->KeyPress(Kart::Key::KEY_A); break; // Arriba
+    case 103:  playerKart->KeyPress(Kart::Key::KEY_B); break; // Abajo
     }
 }
 
@@ -116,7 +119,8 @@ void pressKey(unsigned char key, int x, int y)
 {
     switch (key)
     {
-    case  ' ':  spacePressed = true; break;
+    case  'r':
+    case  'R':  playerKart->KeyPress(Kart::Key::KEY_X); break;
     }
 }
 
@@ -125,10 +129,19 @@ void releaseSpecialKey(int key, int x, int y)
 {
     switch (key)
     {
-    case 100:  xPressed = 0; break; // Izquierda
-    case 102:  xPressed = 0; break; // Derecha
-    case 101:  yPressed = 0;  break; // Arriba
-    case 103:  yPressed = 0;  break; // Abajo
+    case 100:  playerKart->KeyRelease(Kart::Key::KEY_Left); break; // Izquierda
+    case 102:  playerKart->KeyRelease(Kart::Key::KEY_Right); break; // Derecha
+    case 101:  playerKart->KeyRelease(Kart::Key::KEY_A);  break; // Arriba
+    case 103:  playerKart->KeyRelease(Kart::Key::KEY_B);  break; // Abajo
+    }
+}
+
+void releaseKey(unsigned char key, int x, int y)
+{
+    switch (key)
+    {
+    case  'r':
+    case  'R':  playerKart->KeyRelease(Kart::Key::KEY_X); break;
     }
 }
 
@@ -138,7 +151,8 @@ int main(int argc, char** argv)
     glutInit(&argc, argv);
     
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
-    glutInitWindowSize(600, 600);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glutInitWindowSize((int)(600 * 1.666666), 600);
     glutCreateWindow("YAMKC");
 
     init();
@@ -149,9 +163,10 @@ int main(int argc, char** argv)
     glutSpecialFunc(pressSpecialKey);
     glutKeyboardFunc(pressKey);
     glutSpecialUpFunc(releaseSpecialKey);
+    glutKeyboardUpFunc(releaseKey);
 
-    glutTimerFunc((unsigned int)(SPF), onTimer, 0);
     previousTime = glutGet(GLUT_ELAPSED_TIME);
+    glutTimerFunc((unsigned int)(SPF), onTimer, 0);
 
     glutMainLoop();
 
