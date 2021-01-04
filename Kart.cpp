@@ -16,19 +16,26 @@ const Angle3 Kart::defaultWheelRotations[4] = {
     Angle3() // Back-right
 };
 
-const Vector3 Kart::cameraOffset = Vector3(0, 35, 50);
-const Vector3 Kart::cameraLookAtOffset = Vector3(0, 20, 0);
+const int Kart::collisionSpherePrecision = 200;
+const float Kart::collisionSphereW = 6.45f;
+const float Kart::collisionSphereH = 11.45f;
+
+const Vector3 Kart::cameraOffset = Vector3(0, 37, 51);
+const Vector3 Kart::cameraLookAtOffset = Vector3(0, 24, 0);
 const float Kart::cameraFov = 55.f;
+const float Kart::cameraRearViewMultiplyFactor = -1.25f;
 const float Kart::cameraRotationCerpFactor = 0.025f;
 const float Kart::cameraPositionCerpFactor = 0.3f;
 
-const float Kart::engineAccelerationFactor = 2000.f;
-const float Kart::wheelResistanceFactor = 3.f;
+const float Kart::engineAccelerationFactor = 2500.f;
+const float Kart::backwardsAccelerationRatioFactor = -0.35f;
+const float Kart::wheelResistanceFactor = 2.75f;
 const float Kart::windResistanceFactor = 0.0092f;
 const float Kart::kartMassFactor = 8.f;
-const float Kart::maxWheelTurnAngle = 18.f;
-const float Kart::turnBySpeedFactor = 180.f;
-const float Kart::wheelSpinFactor = 10.f;
+const float Kart::maxWheelTurnAngle = 20.f;
+const float Kart::turnBySpeedFactor = 210.f;
+const float Kart::maxTurnAmount = 0.9f;
+const float Kart::wheelSpinFactor = 6.f;
 const float Kart::kartBounceFactor = 350.f;
 const float Kart::kartGrowFactor = 400.f;
 const float Kart::offroadFactor = 20.f;
@@ -191,7 +198,7 @@ void Kart::Calc(int elapsedMsec)
         realAccelFactor = engineAccelerationFactor;
     }
     else if (pressedKeys & Key::KEY_B) {
-        realAccelFactor = -engineAccelerationFactor * 0.5f;
+        realAccelFactor = engineAccelerationFactor * backwardsAccelerationRatioFactor;
     }
     Color currentCol = collision->GetColorAtPosition(GetPosition());
 
@@ -204,17 +211,19 @@ void Kart::Calc(int elapsedMsec)
     speed += (totalAcceleration * (elapsedMsec / 1000.f));
 
     Point speedPoint(0.f);
-    Point maxPoint(0.85f);
+    Point maxPoint(maxTurnAmount);
     speedPoint.Cerp(maxPoint, speed.Magnitude() / turnBySpeedFactor);
 
     Angle rotateAngle = Angle::FromDegrees(right.AsDegrees() / maxWheelTurnAngle) * speedPoint.value;
     speed.Rotate(Angle3(Angle::Zero(), rotateAngle, Angle::Zero()));
     Vector3 advanceNow = speed * (elapsedMsec / 1000.f);
     Angle angleWithFwd = forward.Angle(advanceNow);
+    bool goingBackwards = false;
     if (!std::isinf(angleWithFwd.AsDegrees()) && abs(angleWithFwd.AsDegrees()) > 90.f)
     {
-        speed = Vector3();
-        advanceNow = Vector3();
+        speed.Rotate(Angle3(Angle::Zero(), rotateAngle * -2.f, Angle::Zero()));
+        advanceNow = advanceNow * -1.f;
+        goingBackwards = true;
     }
     
     Angle kartAngle = rotateAngle * -2.f;
@@ -225,20 +234,24 @@ void Kart::Calc(int elapsedMsec)
     driverObj->GetPosition().y += absoluteAngle;
     wheelObjs[0]->GetRotation().y = rotateAngle * maxWheelTurnAngle + defaultWheelRotations[0].y;
     wheelObjs[1]->GetRotation().y = rotateAngle * maxWheelTurnAngle + defaultWheelRotations[1].y;
-    float wheelSpinAmount = advanceNow.Magnitude() * wheelSpinFactor;
-    if (wheelSpinAmount > 15.f)
-        wheelSpinAmount = 15.f;
-    for (int i = 0; i < 4; i++) {
-        wheelObjs[i]->GetPreRotation().x += Angle::FromDegrees(wheelSpinAmount * ((i & 1) ? -1.f : 1.f));
-    }
+    
     
     Angle newAngle = Vector3(0.f, 0.f, -1.f).Angle(advanceNow);
     if (!std::isinf(newAngle.AsRadians()) && abs(advanceNow.Angle(forward).AsDegrees()) < 90.f)
         GetRotation().y = newAngle;
-    GetPosition() += advanceNow;
+
+    Vector3 newKartPosition = CalcCollision(advanceNow * (goingBackwards ? -1.f : 1.f));
+    float wheelSpinAmount = (newKartPosition - GetPosition()).Magnitude() * wheelSpinFactor * (goingBackwards ? -1.f : 1.f);
+    if (abs(wheelSpinAmount) > 15.f)
+        wheelSpinAmount = 15.f * (goingBackwards ? -1.f : 1.f);
+    for (int i = 0; i < 4; i++) {
+        wheelObjs[i]->GetPreRotation().x += Angle::FromDegrees(wheelSpinAmount * ((i & 1) ? -1.f : 1.f));
+    }
+
+    GetPosition() = newKartPosition;
 
     if (pressedKeys & Key::KEY_X)
-        cameraRearView = -1.1f;
+        cameraRearView = cameraRearViewMultiplyFactor;
     else
         cameraRearView = 1.f;
 
@@ -286,4 +299,49 @@ Obj* Kart::GetDriverObj()
 unsigned int Kart::KeysJustPressed()
 {
     return (pressedKeys ^ prevPressedKeys) & pressedKeys;
+}
+
+Vector3 Kart::CalcCollision(const Vector3& advancePos)
+{
+    Vector3 newAdvancePos = advancePos;
+
+    for (int i = 0; i < collisionSpherePrecision; i++) {
+        Vector3 currentPoint;
+        Angle currAngle = Angle::FromDegrees((float)i / collisionSpherePrecision * 360.f);
+        currentPoint.x = currAngle.Sin() * collisionSphereW;
+        currentPoint.z = currAngle.Cos() * collisionSphereH;
+        currentPoint += GetPosition();
+        currentPoint.Rotate(GetRotation(), GetPosition());
+
+        for (int j = 0; j < 4; j++) {
+            Collision::WallType w = collision->GetWallTypeAtPosition(currentPoint + newAdvancePos);
+            switch (w)
+            {
+            case Collision::WallType::NONE:
+                break;
+            case Collision::WallType::SOUTH:
+                if (newAdvancePos.z < 0.f)
+                    newAdvancePos.z = 0.f;
+                break;
+            case Collision::WallType::WEST:
+                if (newAdvancePos.x > 0.f)
+                    newAdvancePos.x = 0.f;
+                break;
+            case Collision::WallType::NORTH:
+                if (newAdvancePos.z > 0.f)
+                    newAdvancePos.z = 0.f;
+                break;
+            case Collision::WallType::EAST:
+                if (newAdvancePos.x < 0.f)
+                    newAdvancePos.x = 0.f;
+                break;
+            case Collision::WallType::ALL:
+                newAdvancePos = Vector3();
+                break;
+            default:
+                break;
+            }
+        }
+    }
+    return GetPosition() + newAdvancePos;
 }

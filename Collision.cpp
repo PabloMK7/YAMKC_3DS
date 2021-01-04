@@ -57,3 +57,21 @@ Color Collision::GetColorAtPosition(const Vector3& position)
 
 	return GetColorAtPixel(imageX, imageZ);
 }
+
+Collision::WallType Collision::GetWallTypeAtPosition(const Vector3& position)
+{
+	Color c = GetColorAtPosition(position);
+	float blue = c.b;
+	if (blue < 0.1f)
+		return WallType::NONE;
+	else if (blue > 0.2 && blue < 0.35)
+		return WallType::SOUTH;
+	else if (blue >= 0.35 && blue < 0.65)
+		return WallType::WEST;
+	else if (blue >= 0.65 && blue < 0.85)
+		return WallType::NORTH;
+	else if (blue >= 0.85)
+		return WallType::EAST;
+	else
+		return WallType::ALL;
+}

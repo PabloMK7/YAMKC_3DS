@@ -47,18 +47,25 @@ private:
 	static const Vector3 defaultWheelPositions[4];
 	static const Angle3 defaultWheelRotations[4];
 
+	static const int collisionSpherePrecision;
+	static const float collisionSphereW;
+	static const float collisionSphereH;
+
 	static const Vector3 cameraOffset;
 	static const Vector3 cameraLookAtOffset;
 	static const float cameraFov;
+	static const float cameraRearViewMultiplyFactor;
 	static const float cameraRotationCerpFactor;
 	static const float cameraPositionCerpFactor;
 
 	static const float engineAccelerationFactor;
+	static const float backwardsAccelerationRatioFactor;
 	static const float wheelResistanceFactor;
 	static const float windResistanceFactor;
 	static const float kartMassFactor;
 	static const float maxWheelTurnAngle;
 	static const float turnBySpeedFactor;
+	static const float maxTurnAmount;
 	static const float wheelSpinFactor;
 	static const float kartBounceFactor;
 	static const float kartGrowFactor;
@@ -75,4 +82,5 @@ private:
 	float cameraRearView = 1.f;
 
 	unsigned int KeysJustPressed();
+	Vector3 CalcCollision(const Vector3& advancePos);
 };
