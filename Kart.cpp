@@ -19,12 +19,28 @@ const Angle3 Kart::defaultWheelRotations[4] = {
 const Vector3 Kart::cameraOffset = Vector3(0, 35, 50);
 const Vector3 Kart::cameraLookAtOffset = Vector3(0, 20, 0);
 const float Kart::cameraFov = 55.f;
+const float Kart::cameraRotationCerpFactor = 0.025f;
+const float Kart::cameraPositionCerpFactor = 0.3f;
 
-Kart::Kart(std::string kartName, std::string wheelName, std::string driverName, std::string shadowName)
+const float Kart::engineAccelerationFactor = 2000.f;
+const float Kart::wheelResistanceFactor = 3.f;
+const float Kart::windResistanceFactor = 0.0092f;
+const float Kart::kartMassFactor = 8.f;
+const float Kart::maxWheelTurnAngle = 18.f;
+const float Kart::turnBySpeedFactor = 180.f;
+const float Kart::wheelSpinFactor = 10.f;
+const float Kart::kartBounceFactor = 350.f;
+const float Kart::kartGrowFactor = 400.f;
+const float Kart::offroadFactor = 20.f;
+
+Kart::Kart(std::string kartName, std::string wheelName, std::string driverName, std::string shadowName, Collision* col)
 {
     pressedKeys = 0;
     prevPressedKeys = 0;
     tiresRotateTimer = -1;
+    currCameraPos = cameraOffset;
+    speed = Vector3();
+    collision = col;
 
     try
     {
@@ -60,13 +76,20 @@ Kart::~Kart()
 
 void Kart::UpdateCamera()
 {
+    static Angle3 oldRotation = GetRotation();
+    static float oldCameraRearView = cameraRearView;
+    bool shouldCerp = (oldCameraRearView == cameraRearView);
+
     Vector3 realCameraOffset = cameraOffset;
     realCameraOffset.z *= cameraRearView;
     Vector3 cameraPos = (GetPosition() + realCameraOffset);
-    cameraPos.Rotate(GetRotation(), GetPosition());
+    oldRotation.Cerp(GetRotation(), shouldCerp ? cameraRotationCerpFactor : 1.f);
+    cameraPos.Rotate(oldRotation, GetPosition());
+    currCameraPos.Cerp(cameraPos, shouldCerp ? cameraPositionCerpFactor : 1.f);
     Vector3 cameraLookAt = GetPosition() + cameraLookAtOffset;
 
-    gluLookAt(cameraPos.x , cameraPos.y, cameraPos.z, cameraLookAt.x, cameraLookAt.y, cameraLookAt.z, 0, 1, 0);
+    gluLookAt(currCameraPos.x , currCameraPos.y, currCameraPos.z, cameraLookAt.x, cameraLookAt.y, cameraLookAt.z, 0, 1, 0);
+    oldCameraRearView = cameraRearView;
 }
 
 void Kart::UpdateViewPort(int w, int h)
@@ -104,11 +127,24 @@ void Kart::Calc(int elapsedMsec)
 {
     totalElapsedTime += elapsedMsec;
     
-    float animAngleSin = Angle::FromDegrees(totalElapsedTime * 360.f / 200.f).Sin();
-    kartObj->GetPosition().y = animAngleSin * 0.1f;
-    shadowObj->GetScale().x = 1.05f + animAngleSin * 0.01f;
-    shadowObj->GetScale().z = 0.95f + animAngleSin * 0.01f;
-    driverObj->GetPosition().y = Angle::FromDegrees((totalElapsedTime + 20) * 360.f / 200.f).Sin() * 0.1f;
+    {
+        float currSpeed = speed.Magnitude();
+        kartObj->GetPosition().y = 0;
+        driverObj->GetPosition().y = 0;
+
+        if (currSpeed < kartBounceFactor) {
+            float animAngleSin = Angle::FromDegrees(totalElapsedTime * 360.f / 200.f).Sin();
+            kartObj->GetPosition().y = animAngleSin * 0.1f * (1.f - currSpeed / kartBounceFactor);
+            shadowObj->GetScale().x = 1.05f + animAngleSin * 0.01f * (1.f - currSpeed / kartBounceFactor);
+            shadowObj->GetScale().z = 0.95f + animAngleSin * 0.01f * (1.f -currSpeed / kartBounceFactor);
+            driverObj->GetPosition().y = Angle::FromDegrees((totalElapsedTime + 20) * 360.f / 200.f).Sin() * 0.1f * (1.f - currSpeed / kartBounceFactor);
+        }
+        float realGrowFactor = currSpeed / kartGrowFactor;
+        if (realGrowFactor > 1.f)
+            realGrowFactor = 1.f;
+        kartObj->GetScale().y = (1.f + realGrowFactor * 0.1);
+        kartObj->GetScale().z = (1.f + realGrowFactor * 0.1);
+    }
 
     if ((prevPressedKeys & Key::KEY_Left) != (pressedKeys & Key::KEY_Left) || (prevPressedKeys & Key::KEY_Right) != (pressedKeys & Key::KEY_Right))
     {
@@ -116,12 +152,12 @@ void Kart::Calc(int elapsedMsec)
         fromTireAngles[0] = wheelObjs[0]->GetRotation().y;
         fromTireAngles[1] = wheelObjs[1]->GetRotation().y;
         if (pressedKeys & Key::KEY_Left) {
-            toTireAngles[0] = defaultWheelRotations[0].y + Angle::FromDegrees(20);
-            toTireAngles[1] = defaultWheelRotations[1].y + Angle::FromDegrees(20);
+            toTireAngles[0] = defaultWheelRotations[0].y + Angle::FromDegrees(maxWheelTurnAngle);
+            toTireAngles[1] = defaultWheelRotations[1].y + Angle::FromDegrees(maxWheelTurnAngle);
         }
         else if (pressedKeys & Key::KEY_Right) {
-            toTireAngles[0] = defaultWheelRotations[0].y - Angle::FromDegrees(20);
-            toTireAngles[1] = defaultWheelRotations[1].y - Angle::FromDegrees(20);
+            toTireAngles[0] = defaultWheelRotations[0].y - Angle::FromDegrees(maxWheelTurnAngle);
+            toTireAngles[1] = defaultWheelRotations[1].y - Angle::FromDegrees(maxWheelTurnAngle);
         }
         else {
             toTireAngles[0] = defaultWheelRotations[0].y;
@@ -146,23 +182,63 @@ void Kart::Calc(int elapsedMsec)
         right = toTireAngles[1];
         tiresRotateTimer = -1;
     }
-    wheelObjs[0]->GetRotation().y = left;
-    wheelObjs[1]->GetRotation().y = right;
 
-    Vector3 forward = GetForward() * 5;
-    if (pressedKeys & Key::KEY_Left)
-        GetRotation().y += Angle::FromDegrees(1);
-    else if (pressedKeys & Key::KEY_Right)
-        GetRotation().y -= Angle::FromDegrees(1);
+    Vector3 forward = GetForward();
+    Vector3 speedVector = speed;
+    float realAccelFactor = 0.f;
+
     if (pressedKeys & Key::KEY_A) {
-        GetPosition() += forward;
+        realAccelFactor = engineAccelerationFactor;
     }
     else if (pressedKeys & Key::KEY_B) {
-        GetPosition() -= forward;
+        realAccelFactor = -engineAccelerationFactor * 0.5f;
     }
+    Color currentCol = collision->GetColorAtPosition(GetPosition());
+
+    Vector3 engineForce = forward * realAccelFactor;
+    float realWheelResistanceFactor = wheelResistanceFactor + currentCol.r * offroadFactor;
+    Vector3 tireResistance = speedVector * (-realWheelResistanceFactor);
+    Vector3 windResistance = speedVector * (-windResistanceFactor * speedVector.Magnitude());
+    Vector3 totalAcceleration = (engineForce + tireResistance + windResistance) / kartMassFactor;
+
+    speed += (totalAcceleration * (elapsedMsec / 1000.f));
+
+    Point speedPoint(0.f);
+    Point maxPoint(0.85f);
+    speedPoint.Cerp(maxPoint, speed.Magnitude() / turnBySpeedFactor);
+
+    Angle rotateAngle = Angle::FromDegrees(right.AsDegrees() / maxWheelTurnAngle) * speedPoint.value;
+    speed.Rotate(Angle3(Angle::Zero(), rotateAngle, Angle::Zero()));
+    Vector3 advanceNow = speed * (elapsedMsec / 1000.f);
+    Angle angleWithFwd = forward.Angle(advanceNow);
+    if (!std::isinf(angleWithFwd.AsDegrees()) && abs(angleWithFwd.AsDegrees()) > 90.f)
+    {
+        speed = Vector3();
+        advanceNow = Vector3();
+    }
+    
+    Angle kartAngle = rotateAngle * -2.f;
+    float absoluteAngle = abs(kartAngle.AsDegrees()) / 3.5f;
+    kartObj->GetRotation().z = kartAngle;
+    driverObj->GetRotation().z = kartObj->GetRotation().z;
+    kartObj->GetPosition().y += absoluteAngle;
+    driverObj->GetPosition().y += absoluteAngle;
+    wheelObjs[0]->GetRotation().y = rotateAngle * maxWheelTurnAngle + defaultWheelRotations[0].y;
+    wheelObjs[1]->GetRotation().y = rotateAngle * maxWheelTurnAngle + defaultWheelRotations[1].y;
+    float wheelSpinAmount = advanceNow.Magnitude() * wheelSpinFactor;
+    if (wheelSpinAmount > 15.f)
+        wheelSpinAmount = 15.f;
+    for (int i = 0; i < 4; i++) {
+        wheelObjs[i]->GetPreRotation().x += Angle::FromDegrees(wheelSpinAmount * ((i & 1) ? -1.f : 1.f));
+    }
+    
+    Angle newAngle = Vector3(0.f, 0.f, -1.f).Angle(advanceNow);
+    if (!std::isinf(newAngle.AsRadians()) && abs(advanceNow.Angle(forward).AsDegrees()) < 90.f)
+        GetRotation().y = newAngle;
+    GetPosition() += advanceNow;
 
     if (pressedKeys & Key::KEY_X)
-        cameraRearView = -1.f;
+        cameraRearView = -1.1f;
     else
         cameraRearView = 1.f;
 

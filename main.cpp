@@ -16,6 +16,7 @@
 
 Obj* courseModel = nullptr;
 Kart* playerKart = nullptr;
+Collision* collision = nullptr;
 
 // Inicialización de los objetos.
 void init() {
@@ -33,8 +34,8 @@ void init() {
     catch (const char* msg) {
         std::cout << std::string("Failed to load course model: ") + msg << std::endl;
     }
-
-    playerKart = new Kart("data/driver/kart.obj", "data/driver/wheel.obj", "data/driver/driver.obj", "data/driver/shadow.obj");
+    collision = new Collision("data/collision/map.png", "data/collision/UIMapPos.bin");
+    playerKart = new Kart("data/driver/kart.obj", "data/driver/wheel.obj", "data/driver/driver.obj", "data/driver/shadow.obj", collision);
     playerKart->GetScale() = Vector3(1.2f, 1.2f, 1.2f);
     playerKart->GetDriverObj()->GetMaterial("mat_driver_body").SetTextureRepeatMode(Obj::Material::TextureDirection::DIR_S, GL_MIRRORED_REPEAT);
     playerKart->GetDriverObj()->GetMaterial("mat_driver_body").SetTextureRepeatMode(Obj::Material::TextureDirection::DIR_T, GL_MIRRORED_REPEAT);
@@ -44,6 +45,8 @@ void init() {
 // Destrucción de los objetos.
 void exit() {
     if (courseModel) delete courseModel;
+    if (playerKart) delete playerKart;
+    if (collision) delete collision;
 }
 
 // Distancia de la camara al origen de coordenadas.
@@ -88,6 +91,8 @@ void onTimer(int val) {
     // Llamada a la función calc con el tiempo transcurrido a cada objeto.
     // De esta forma, cada objeto es responsable de actualizar sus parámetros.
     playerKart->Calc(elapsed);
+
+    glutSetWindowTitle(("YAMKC - FPS: " + std::to_string((1.f / (float)elapsed) * 1000.f)).c_str());
 
     glutPostRedisplay();
 }

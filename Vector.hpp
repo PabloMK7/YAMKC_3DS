@@ -77,7 +77,9 @@ public:
     }
 
     void Lerp(const Angle& other, float amount) {
-        *this += (other - *this) * amount;
+        float cs = (1.f - amount) * cosf(this->AsRadians()) + amount * cosf(other.AsRadians());
+        float sn = (1.f - amount) * sinf(this->AsRadians()) + amount * sinf(other.AsRadians());
+        value = atan2f(sn, cs);
     }
 
     void Cerp(const Angle& other, float amount) {
@@ -172,7 +174,9 @@ public:
     }
 
     void Lerp(const Angle3& other, float amount) {
-        *this += (other - *this) * amount;
+        x.Lerp(other.x, amount);
+        y.Lerp(other.y, amount);
+        z.Lerp(other.z, amount);
     }
 
     void Cerp(const Angle3& other, float amount) {
@@ -251,9 +255,9 @@ public:
     Vector3 operator/(const float& amount) const 
     {
         Vector3 ret;
-        ret.x = this->x * amount;
-        ret.y = this->y * amount;
-        ret.z = this->z * amount;
+        ret.x = this->x / amount;
+        ret.y = this->y / amount;
+        ret.z = this->z / amount;
         return ret;
     }
 
@@ -325,7 +329,21 @@ public:
     }
 
     void Normalize() {
-        *this / Magnitude();
+        float mag = Magnitude();
+        if (mag != 0.f)
+            *this /= mag;
+    }
+
+    Angle Angle(const Vector3& other) {
+        float otherMag = other.Magnitude();
+        float thisMag = Magnitude();
+        if (thisMag != 0.f && otherMag != 0.f)
+        {
+            float multiply = copysignf(1.0f, this->Cross(other).y);
+            return Angle::FromRadians(acosf(Dot(other) / (thisMag * otherMag))) * multiply;
+        }
+            
+        return Angle::FromDegrees(INFINITY); // Return infinity
     }
 
     float x, y, z;
@@ -403,4 +421,22 @@ private:
         this->x /= amount;
         this->y /= amount;
     }
+};
+
+class Point
+{
+public:
+    constexpr Point(float val) : value(val) {}
+
+    void Lerp(const Point& other, float amount) {
+        this->value += (other.value - this->value) * amount;
+    }
+
+    void Cerp(const Point& other, float amount) {
+        if (amount > 1.f)
+            amount = 1.f;
+        Lerp(other, 1.f - (amount - 1.f) * (amount - 1.f));
+    }
+
+    float value;
 };

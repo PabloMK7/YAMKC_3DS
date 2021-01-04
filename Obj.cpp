@@ -177,6 +177,9 @@ void Obj::Draw()
     glRotatef(rotation.x.AsDegrees(), 1.f, 0.f, 0.f);
     glRotatef(rotation.y.AsDegrees(), 0.f, 1.f, 0.f);
     glRotatef(rotation.z.AsDegrees(), 0.f, 0.f, 1.f);
+    glRotatef(preRotation.x.AsDegrees(), 1.f, 0.f, 0.f);
+    glRotatef(preRotation.y.AsDegrees(), 0.f, 1.f, 0.f);
+    glRotatef(preRotation.z.AsDegrees(), 0.f, 0.f, 1.f);
     glScalef(scale.x, scale.y, scale.z);
 
     for (auto it = materials.begin(); it != materials.end(); it++)
@@ -192,6 +195,11 @@ Vector3& Obj::GetPosition()
 Angle3& Obj::GetRotation()
 {
     return rotation;
+}
+
+Angle3& Obj::GetPreRotation()
+{
+    return preRotation;
 }
 
 Vector3& Obj::GetScale()

@@ -1,11 +1,12 @@
 #pragma once
 #include <string>
 #include "Obj.hpp"
+#include "Collision.hpp"
 
 class Kart
 {
 public:
-	Kart(std::string kartName, std::string wheelName, std::string driverName, std::string shadowName);
+	Kart(std::string kartName, std::string wheelName, std::string driverName, std::string shadowName, Collision* col);
 	~Kart();
 
 	enum Key {
@@ -35,10 +36,13 @@ private:
 	Obj* driverObj;
 	Obj* wheelObjs[4];
 	Obj* shadowObj;
+	Collision* collision;	
 
 	Vector3 position;
+	Vector3 speed;
 	Angle3 rotation;
 	Vector3 scale = Vector3(1.f, 1.f, 1.f);
+	Vector3 currCameraPos;
 
 	static const Vector3 defaultWheelPositions[4];
 	static const Angle3 defaultWheelRotations[4];
@@ -46,6 +50,19 @@ private:
 	static const Vector3 cameraOffset;
 	static const Vector3 cameraLookAtOffset;
 	static const float cameraFov;
+	static const float cameraRotationCerpFactor;
+	static const float cameraPositionCerpFactor;
+
+	static const float engineAccelerationFactor;
+	static const float wheelResistanceFactor;
+	static const float windResistanceFactor;
+	static const float kartMassFactor;
+	static const float maxWheelTurnAngle;
+	static const float turnBySpeedFactor;
+	static const float wheelSpinFactor;
+	static const float kartBounceFactor;
+	static const float kartGrowFactor;
+	static const float offroadFactor;
 
 	int totalElapsedTime = 0;
 	unsigned int pressedKeys;
