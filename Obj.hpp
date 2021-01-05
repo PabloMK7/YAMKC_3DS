@@ -30,23 +30,34 @@ public:
 			DIR_S,
 			DIR_T
 		};
+		enum class ColorType
+		{
+			AMBIENT,
+			DIFFUSE,
+			SPECULAR
+		};
 		Material(Obj* parent, std::string name);
 		~Material();
 		std::string& GetName();
 		void AddFace(const Face& face);
-		void SetColor(const Color& color);
+		void SetColor(ColorType t, const Color& color);
+		Color& GetColor(ColorType t);
 		void SetTexture(const std::string& fileName);
 		void SetTextureRepeatMode(TextureDirection dir, int mode);
+		void ForceDisableFog(bool disable);
 		void Draw();
 
 	private:
 		Color diffuseColor;
+		Color ambientColor;
+		Color specularColor;
 		Texture* texture = nullptr;
 		Obj* parent;
 		std::string name;
 		std::vector<Obj::Face> faces;
 		int textureSMode;
 		int textureTMode;
+		bool fogDisabled;
 	};
 
 	Obj(std::string filename);
@@ -57,6 +68,7 @@ public:
 	Angle3& GetRotation();
 	Angle3& GetPreRotation();
 	Vector3& GetScale();
+	std::vector<Obj::Material>& Materials();
 	Material& GetMaterial(std::string name);
 
 private:

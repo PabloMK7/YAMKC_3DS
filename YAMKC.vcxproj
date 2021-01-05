@@ -150,6 +150,7 @@
   <ItemGroup>
     <ClCompile Include="Collision.cpp" />
     <ClCompile Include="Kart.cpp" />
+    <ClCompile Include="Light.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Obj.cpp" />
     <ClCompile Include="Texture.cpp" />
@@ -158,6 +159,7 @@
     <ClInclude Include="Collision.hpp" />
     <ClInclude Include="Color.hpp" />
     <ClInclude Include="Kart.hpp" />
+    <ClInclude Include="Light.hpp" />
     <ClInclude Include="Obj.hpp" />
     <ClInclude Include="Shape.hpp" />
     <ClInclude Include="Texture.hpp" />

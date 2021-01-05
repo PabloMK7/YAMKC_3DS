@@ -1,0 +1,43 @@
+newmtl mat_back_hills_night
+illum 4
+Kd 1.00 1.00 1.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd hills1_night.png
+Ni 1.00
+Ks 0.33 0.33 0.33
+Ns 0.06
+newmtl mat_back_trees_night
+illum 4
+Kd 1.00 1.00 1.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd trees1_night.png
+Ni 1.00
+Ks 0.33 0.33 0.33
+Ns 0.06
+newmtl mat_moon
+illum 4
+Kd 1.00 1.00 1.00
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+map_Kd moon.png
+Ni 1.00
+newmtl mat_sky_behind_night
+illum 4
+Kd 1.00 1.00 1.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd sky_behind1_night.png
+Ni 1.00
+Ks 0.33 0.33 0.33
+Ns 0.06
+newmtl mat_sky_top_night
+illum 4
+Kd 1.00 1.00 1.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd skytop1_night.png
+Ni 1.00
+Ks 0.33 0.33 0.33
+Ns 0.06

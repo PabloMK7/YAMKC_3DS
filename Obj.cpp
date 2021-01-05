@@ -93,7 +93,9 @@ Obj::Obj(std::string filename)
                 throw "Invalid normal dimensions.";
             try
             {
-                normals.push_back(Vector3(std::stof(pieces[1]), std::stof(pieces[2]), std::stof(pieces[3])));
+                Vector3 normal = Vector3(std::stof(pieces[1]), std::stof(pieces[2]), std::stof(pieces[3]));
+                normal.Normalize();
+                normals.push_back(normal);
             }
             catch (const std::exception&)
             {
@@ -207,6 +209,10 @@ Vector3& Obj::GetScale()
     return scale;
 }
 
+std::vector<Obj::Material>& Obj::Materials() {
+    return materials;
+}
+
 Obj::Material& Obj::GetMaterial(std::string name)
 {
     for (unsigned int i = 0; i < materials.size(); i++)
@@ -249,12 +255,46 @@ void Obj::LoadMatlib(std::string filename)
                 float b = std::stof(pieces[3]);
                 if (r < 0.f || r > 1.f || g < 0.f || g > 1.f || b < 0.f || b > 1.f)
                     throw std::exception("");
-                GetMaterial(currMat).SetColor(Color(r,g,b));
+                GetMaterial(currMat).SetColor(Material::ColorType::DIFFUSE, Color(r,g,b));
             }
             catch (const std::exception&)
             {
                 throw "Invalid color format.";
             }            
+        }
+        else if (pieces[0] == "Ka") {
+            if (pieces.size() != 4)
+                throw "Invalid color dimensions.";
+            try
+            {
+                float r = std::stof(pieces[1]);
+                float g = std::stof(pieces[2]);
+                float b = std::stof(pieces[3]);
+                if (r < 0.f || r > 1.f || g < 0.f || g > 1.f || b < 0.f || b > 1.f)
+                    throw std::exception("");
+                GetMaterial(currMat).SetColor(Material::ColorType::AMBIENT, Color(r, g, b));
+            }
+            catch (const std::exception&)
+            {
+                throw "Invalid color format.";
+            }
+        }
+        else if (pieces[0] == "Ks") {
+            if (pieces.size() != 4)
+                throw "Invalid color dimensions.";
+            try
+            {
+                float r = std::stof(pieces[1]);
+                float g = std::stof(pieces[2]);
+                float b = std::stof(pieces[3]);
+                if (r < 0.f || r > 1.f || g < 0.f || g > 1.f || b < 0.f || b > 1.f)
+                    throw std::exception("");
+                GetMaterial(currMat).SetColor(Material::ColorType::SPECULAR, Color(r, g, b));
+            }
+            catch (const std::exception&)
+            {
+                throw "Invalid color format.";
+            }
         }
         else if (pieces[0] == "map_Kd") {
             if (pieces.size() != 2)
@@ -312,6 +352,7 @@ Obj::Material::Material(Obj* parent, std::string name)
 {
     this->parent = parent;
     this->name = name;
+    fogDisabled = false;
     textureSMode = GL_REPEAT;
     textureTMode = GL_REPEAT;
 }
@@ -332,9 +373,40 @@ void Obj::Material::AddFace(const Obj::Face& face)
     faces.push_back(face);
 }
 
-void Obj::Material::SetColor(const Color& color)
+void Obj::Material::SetColor(ColorType t, const Color& color)
 {
-    diffuseColor = color;
+    switch (t)
+    {
+    case Obj::Material::ColorType::AMBIENT:
+        ambientColor = color;
+        break;
+    case Obj::Material::ColorType::DIFFUSE:
+        diffuseColor = color;
+        break;
+    case Obj::Material::ColorType::SPECULAR:
+        specularColor = color;
+        break;
+    default:
+        break;
+    }
+}
+
+Color& Obj::Material::GetColor(ColorType t)
+{
+    switch (t)
+    {
+    case Obj::Material::ColorType::AMBIENT:
+        return ambientColor;
+        break;
+    case Obj::Material::ColorType::DIFFUSE:
+        return diffuseColor;
+        break;
+    case Obj::Material::ColorType::SPECULAR:
+        return specularColor;
+        break;
+    default:
+        break;
+    }
 }
 
 void Obj::Material::SetTexture(const std::string& fileName)
@@ -359,11 +431,16 @@ void Obj::Material::SetTextureRepeatMode(TextureDirection dir, int mode)
     }
 }
 
+void Obj::Material::ForceDisableFog(bool disable)
+{
+    fogDisabled = disable;
+}
+
 void Obj::Material::Draw()
 {
     glDisable(GL_ALPHA_TEST);
     glDisable(GL_TEXTURE_2D);
-    glColor4f(diffuseColor.r, diffuseColor.g, diffuseColor.b, diffuseColor.a);
+    
     if (texture) {
         glEnable(GL_TEXTURE_2D);
         if (texture->HasTransparency())
@@ -379,7 +456,26 @@ void Obj::Material::Draw()
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, textureSMode);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, textureTMode);
+    
+    bool lightEnabled = glIsEnabled(GL_LIGHTING) == GL_TRUE;
+    if (lightEnabled) {
+        GLfloat args[4];
+        args[0] = ambientColor.r; args[1] = ambientColor.g; args[2] = ambientColor.b; args[3] = ambientColor.a;
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, args);
+        args[0] = diffuseColor.r; args[1] = diffuseColor.g; args[2] = diffuseColor.b; args[3] = diffuseColor.a;
+        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, args);
+        args[0] = specularColor.r; args[1] = specularColor.g; args[2] = specularColor.b; args[3] = specularColor.a;
+        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, args);
+        args[0] = 0.f; args[1] = 0.f; args[2] = 0.f; args[3] = 0.f;
+        glMaterialfv(GL_FRONT, GL_EMISSION, args);
+    }
+    else
+        glColor4f(diffuseColor.r, diffuseColor.g, diffuseColor.b, diffuseColor.a);
+    
 
+    bool wasFogEnabled = glIsEnabled(GL_FOG) == GL_TRUE;
+    if (wasFogEnabled && fogDisabled)
+        glDisable(GL_FOG);
     for (auto it = faces.begin(); it != faces.end(); it++) {
         Face &currFace = *it;
         glBegin(GL_TRIANGLES);
@@ -387,11 +483,13 @@ void Obj::Material::Draw()
             Vector3 normal = currFace.GetNormal(parent, i);
             Vector2 texCoord = currFace.GetTexCoord(parent, i);
             Vector3 vert = currFace.GetVertex(parent, i);
-            
+
             glNormal3f(normal.x, normal.y, normal.z);
             glTexCoord2f(texCoord.x, texCoord.y);
             glVertex3f(vert.x, vert.y, vert.z);
         }
         glEnd();
     }
+    if (wasFogEnabled && fogDisabled)
+        glEnable(GL_FOG);
 }

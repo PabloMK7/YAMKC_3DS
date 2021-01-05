@@ -6,6 +6,7 @@
 #include "Color.hpp"
 #include "Obj.hpp"
 #include "Kart.hpp"
+#include "Light.hpp"
 #include <ctime>
 #include <freeimage/FreeImage.h>
 #pragma comment(lib, "FreeImage.lib")
@@ -15,8 +16,69 @@
 #define SPF 1.f / FPS
 
 Obj* courseModel = nullptr;
+Obj* skyboxModels[2] = { nullptr, nullptr };
 Kart* playerKart = nullptr;
 Collision* collision = nullptr;
+Light* dayLight = nullptr;
+Light* nightLight = nullptr;
+
+bool isDayMode = true;
+bool isFogMode = false;
+Color dayGlobalAmbientColor = Color(0.85f, 0.85f, 0.85f);
+Color nightGlobalAmbientColor = Color(0.2f, 0.2f, 0.2f);
+
+void setLightFogMode(bool isDay) {
+    static bool prevDayMode = isDayMode;
+    float scale;
+
+    isDayMode = isDay;
+
+    glFogf(GL_FOG_DENSITY, isFogMode ? 0.001f : 0.00005f);
+    if (isDay)
+    {
+        GLfloat fogColor[4] = { 1.f, 1.f, 1.f, 1.0f };
+        glFogfv(GL_FOG_COLOR, fogColor);
+
+        glClearColor(1.f, 1.f, 1.f, 1.f);
+    }
+    else
+    {
+        GLfloat fogColor[4] = { 0.1f, 0.15f, 0.17f, 1.f };
+        glFogfv(GL_FOG_COLOR, fogColor);
+        if (isFogMode) skyboxModels[1]->GetMaterial("mat_moon").GetColor(Obj::Material::ColorType::DIFFUSE) = Color(0.25f, 0.25f, 0.25f);
+        else skyboxModels[1]->GetMaterial("mat_moon").GetColor(Obj::Material::ColorType::DIFFUSE) = Color(1.f, 1.f, 1.f);
+
+        glClearColor(0.f, 0.f, 0.f, 1.f);
+    }
+        
+
+    if (!prevDayMode && isDay)
+        scale = 1.f / 0.55f;
+    else if (prevDayMode && !isDay)
+        scale = 0.55f;
+    else
+        scale = 1.f;
+
+    for (auto& mat : courseModel->Materials()) {
+        mat.GetColor(Obj::Material::ColorType::AMBIENT).Scale(scale, false);
+        mat.GetColor(Obj::Material::ColorType::DIFFUSE).Scale(scale, false);
+    }
+    for (auto& mat : playerKart->GetDriverObj()->Materials()) {
+        mat.GetColor(Obj::Material::ColorType::AMBIENT).Scale(scale, false);
+        mat.GetColor(Obj::Material::ColorType::DIFFUSE).Scale(scale, false);
+    }
+    for (auto& mat : playerKart->GetKartObj()->Materials()) {
+        mat.GetColor(Obj::Material::ColorType::AMBIENT).Scale(scale, false);
+        mat.GetColor(Obj::Material::ColorType::DIFFUSE).Scale(scale, false);
+    }
+    for (int i = 0; i < 4; i++) {
+        for (auto& mat : playerKart->GetWheelObjs()[i]->Materials()) {
+            mat.GetColor(Obj::Material::ColorType::AMBIENT).Scale(scale, false);
+            mat.GetColor(Obj::Material::ColorType::DIFFUSE).Scale(scale, false);
+        }
+    }
+    prevDayMode = isDay;
+}
 
 // Inicialización de los objetos.
 void init() {
@@ -25,11 +87,22 @@ void init() {
 
     glEnable(GL_DEPTH_TEST);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    
-    glClearColor(1.f, 1.f, 1.f, 1.f);
+
+    dayLight = new Light(GL_LIGHT0);
+    nightLight = new Light(GL_LIGHT0);
+
+    dayLight->SetPosition(Vector3(0.001f, 1.001f, 0.001f));
+    dayLight->SetColor(Light::ColorType::AMBIENT, Color(0.9f, 0.9f, 0.9f));
+    dayLight->SetColor(Light::ColorType::DIFFUSE, Color(0.9f, 0.9f, 0.9f));
+
+    nightLight->SetPosition(Vector3(-1.f, 1.f, 0.01f));
+    nightLight->SetColor(Light::ColorType::AMBIENT, Color(0.7f, 0.8f, 0.9f));
+    nightLight->SetColor(Light::ColorType::DIFFUSE, Color(0.7f, 0.8f, 0.9f));
 
     try {
         courseModel = new Obj("data/course_model/course_model.obj");
+        skyboxModels[0] = new Obj("data/course_model/skybox_model_day.obj");
+        skyboxModels[1] = new Obj("data/course_model/skybox_model_night.obj");
     }
     catch (const char* msg) {
         std::cout << std::string("Failed to load course model: ") + msg << std::endl;
@@ -40,11 +113,18 @@ void init() {
     playerKart->GetDriverObj()->GetMaterial("mat_driver_body").SetTextureRepeatMode(Obj::Material::TextureDirection::DIR_S, GL_MIRRORED_REPEAT);
     playerKart->GetDriverObj()->GetMaterial("mat_driver_body").SetTextureRepeatMode(Obj::Material::TextureDirection::DIR_T, GL_MIRRORED_REPEAT);
     playerKart->GetDriverObj()->GetMaterial("mat_driver_eyes").SetTextureRepeatMode(Obj::Material::TextureDirection::DIR_S, GL_MIRRORED_REPEAT);
+    skyboxModels[1]->GetMaterial("mat_moon").ForceDisableFog(true);
+
+    setLightFogMode(isDayMode);
 }
 
 // Destrucción de los objetos.
 void exit() {
+    if (dayLight) delete dayLight;
+    if (nightLight) delete nightLight;
     if (courseModel) delete courseModel;
+    if (skyboxModels[0]) delete skyboxModels[0];
+    if (skyboxModels[1]) delete skyboxModels[1];
     if (playerKart) delete playerKart;
     if (collision) delete collision;
 }
@@ -67,10 +147,25 @@ void display()
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    
+
+    Light::GlobalAmbientColor = (isDayMode) ? dayGlobalAmbientColor : nightGlobalAmbientColor;
+
     playerKart->UpdateCamera();
 
+    if (isDayMode)
+        dayLight->Update();
+    else
+        nightLight->Update();
+
     // Draw functions
+    Light::GlobalDisable();
+    if (!isFogMode) glDisable(GL_FOG);
+    else glEnable(GL_FOG);
+    if (isDayMode && skyboxModels[0]) skyboxModels[0]->Draw();
+    else if (!isDayMode && skyboxModels[1]) skyboxModels[1]->Draw();
+
+    Light::GlobalEnable();
+    if (!isFogMode) glEnable(GL_FOG);
     if (courseModel) courseModel->Draw();
     if (playerKart) playerKart->Draw();
 
@@ -126,6 +221,10 @@ void pressKey(unsigned char key, int x, int y)
     {
     case  'r':
     case  'R':  playerKart->KeyPress(Kart::Key::KEY_X); break;
+    case  'l':
+    case  'L':  setLightFogMode(!isDayMode); break;
+    case  'n':
+    case  'N':  isFogMode = !isFogMode; setLightFogMode(isDayMode); break;
     }
 }
 

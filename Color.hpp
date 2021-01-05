@@ -47,5 +47,13 @@ public:
         this->b = right.b;
         this->a = right.a;
     }
+
+    void Scale(const float& value, bool affectAlpha) {
+        this->r *= value;
+        this->g *= value;
+        this->b *= value;
+        if (affectAlpha) this->a *= value;
+    }
+
     float r, g, b, a;
 };

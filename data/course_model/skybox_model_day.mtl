@@ -1,0 +1,36 @@
+newmtl mat_back_hills_day
+illum 4
+Kd 1.00 1.00 1.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd hills1.png
+Ni 1.00
+Ks 0.33 0.33 0.33
+Ns 0.06
+newmtl mat_back_trees_day
+illum 4
+Kd 1.00 1.00 1.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd trees1.png
+Ni 1.00
+Ks 0.33 0.33 0.33
+Ns 0.06
+newmtl mat_sky_behind_day
+illum 4
+Kd 1.00 1.00 1.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd sky_behind1.png
+Ni 1.00
+Ks 0.33 0.33 0.33
+Ns 0.06
+newmtl mat_sky_top_day
+illum 4
+Kd 1.00 1.00 1.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd skytop1.png
+Ni 1.00
+Ks 0.33 0.33 0.33
+Ns 0.06

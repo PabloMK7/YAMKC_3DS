@@ -1,25 +1,7 @@
-newmtl mat_back_hills
-illum 4
-Kd 1.00 1.00 1.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd hills1.png
-Ni 1.00
-Ks 0.33 0.33 0.33
-Ns 0.06
-newmtl mat_back_trees
-illum 4
-Kd 1.00 1.00 1.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd trees1.png
-Ni 1.00
-Ks 0.33 0.33 0.33
-Ns 0.06
 newmtl mat_finish_banner
 illum 4
 Kd 1.00 1.00 1.00
-Ka 1.00 1.00 1.00
+Ka 0.80 0.80 0.80
 Tf 1.00 1.00 1.00
 map_Kd ermiikart_cmp2.png
 Ni 1.00
@@ -27,8 +9,8 @@ Ks 0.33 0.33 0.33
 Ns 0.06
 newmtl mat_finish_line
 illum 4
-Kd 1.00 1.00 1.00
-Ka 1.00 1.00 1.00
+Kd 0.80 0.80 0.80
+Ka 0.20 0.20 0.20
 Tf 1.00 1.00 1.00
 map_Kd check1_cmp1.png
 Ni 1.00
@@ -36,8 +18,8 @@ Ks 0.33 0.33 0.33
 Ns 0.06
 newmtl mat_grass
 illum 4
-Kd 1.00 1.00 1.00
-Ka 1.00 1.00 1.00
+Kd 0.80 0.80 0.80
+Ka 0.20 0.20 0.20
 Tf 1.00 1.00 1.00
 map_Kd grass1_cmp1.png
 Ni 1.00
@@ -45,24 +27,17 @@ Ks 0.33 0.33 0.33
 Ns 0.06
 newmtl mat_grass_sand
 illum 4
-Kd 1.00 1.00 1.00
-Ka 1.00 1.00 1.00
+Kd 0.80 0.80 0.80
+Ka 0.20 0.20 0.20
 Tf 1.00 1.00 1.00
 map_Kd transition.png
 Ni 1.00
 Ks 0.33 0.33 0.33
 Ns 0.06
-newmtl mat_lights
-illum 4
-Kd 1.00 1.00 1.00
-Ka 0.00 0.00 0.00
-Tf 1.00 1.00 1.00
-map_Kd lights.png
-Ni 1.00
 newmtl mat_main_road
 illum 4
-Kd 1.00 1.00 1.00
-Ka 1.00 1.00 1.00
+Kd 0.80 0.80 0.80
+Ka 0.20 0.20 0.20
 Tf 1.00 1.00 1.00
 map_Kd road1.png
 Ni 1.00
@@ -70,8 +45,8 @@ Ks 0.33 0.33 0.33
 Ns 0.06
 newmtl mat_main_road_strip
 illum 4
-Kd 1.00 1.00 1.00
-Ka 1.00 1.00 1.00
+Kd 0.80 0.80 0.80
+Ka 0.20 0.20 0.20
 Tf 1.00 1.00 1.00
 map_Kd road2.png
 Ni 1.00
@@ -80,7 +55,7 @@ Ns 0.06
 newmtl mat_pole
 illum 4
 Kd 1.00 1.00 1.00
-Ka 1.00 1.00 1.00
+Ka 0.80 0.80 0.80
 Tf 1.00 1.00 1.00
 map_Kd mat43_cmp3.png
 Ni 1.00
@@ -88,35 +63,17 @@ Ks 0.33 0.33 0.33
 Ns 0.06
 newmtl mat_sand
 illum 4
-Kd 1.00 1.00 1.00
-Ka 1.00 1.00 1.00
+Kd 0.80 0.80 0.80
+Ka 0.20 0.20 0.20
 Tf 1.00 1.00 1.00
 map_Kd Sand1_cmp1.png
 Ni 1.00
 Ks 0.33 0.33 0.33
 Ns 0.06
-newmtl mat_sky_behind
-illum 4
-Kd 1.00 1.00 1.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd sky_behind1.png
-Ni 1.00
-Ks 0.33 0.33 0.33
-Ns 0.06
-newmtl mat_sky_top
-illum 4
-Kd 1.00 1.00 1.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd skytop1.png
-Ni 1.00
-Ks 0.33 0.33 0.33
-Ns 0.06
 newmtl mat_trees
 illum 4
-Kd 1.00 1.00 1.00
-Ka 1.00 1.00 1.00
+Kd 0.80 0.80 0.80
+Ka 0.20 0.20 0.20
 Tf 1.00 1.00 1.00
 map_Kd trees.png
 Ni 1.00
@@ -124,8 +81,8 @@ Ks 0.33 0.33 0.33
 Ns 0.06
 newmtl mat_walls
 illum 4
-Kd 1.00 1.00 1.00
-Ka 1.00 1.00 1.00
+Kd 0.80 0.80 0.80
+Ka 0.20 0.20 0.20
 Tf 1.00 1.00 1.00
 map_Kd m_wall1.png
 Ni 1.00

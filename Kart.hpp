@@ -30,6 +30,8 @@ public:
 	Vector3 GetForward();
 
 	Obj* GetDriverObj();
+	Obj* GetKartObj();
+	Obj** GetWheelObjs();
 
 private:
 	Obj* kartObj;

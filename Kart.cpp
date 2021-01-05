@@ -20,8 +20,8 @@ const int Kart::collisionSpherePrecision = 200;
 const float Kart::collisionSphereW = 6.45f;
 const float Kart::collisionSphereH = 11.45f;
 
-const Vector3 Kart::cameraOffset = Vector3(0, 37, 51);
-const Vector3 Kart::cameraLookAtOffset = Vector3(0, 24, 0);
+const Vector3 Kart::cameraOffset = Vector3(0, 36, 51);
+const Vector3 Kart::cameraLookAtOffset = Vector3(0, 23, 0);
 const float Kart::cameraFov = 55.f;
 const float Kart::cameraRearViewMultiplyFactor = -1.25f;
 const float Kart::cameraRotationCerpFactor = 0.025f;
@@ -294,6 +294,16 @@ Vector3 Kart::GetForward()
 Obj* Kart::GetDriverObj()
 {
     return driverObj;
+}
+
+Obj* Kart::GetKartObj()
+{
+    return kartObj;
+}
+
+Obj** Kart::GetWheelObjs()
+{
+    return wheelObjs;
 }
 
 unsigned int Kart::KeysJustPressed()
