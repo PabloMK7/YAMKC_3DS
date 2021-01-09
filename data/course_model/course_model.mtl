@@ -82,7 +82,7 @@ Ns 0.06
 newmtl mat_walls
 illum 4
 Kd 0.80 0.80 0.80
-Ka 0.20 0.20 0.20
+Ka 0.40 0.40 0.40
 Tf 1.00 1.00 1.00
 map_Kd m_wall1.png
 Ni 1.00

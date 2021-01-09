@@ -150,20 +150,33 @@
   <ItemGroup>
     <ClCompile Include="Collision.cpp" />
     <ClCompile Include="Kart.cpp" />
+    <ClCompile Include="Lamp.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Obj.cpp" />
+    <ClCompile Include="Plane.cpp" />
+    <ClCompile Include="Speedometer.cpp" />
     <ClCompile Include="Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Collision.hpp" />
     <ClInclude Include="Color.hpp" />
     <ClInclude Include="Kart.hpp" />
+    <ClInclude Include="Lamp.hpp" />
     <ClInclude Include="Light.hpp" />
     <ClInclude Include="Obj.hpp" />
+    <ClInclude Include="Plane.hpp" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="Shape.hpp" />
+    <ClInclude Include="Speedometer.hpp" />
     <ClInclude Include="Texture.hpp" />
     <ClInclude Include="Vector.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="YAMKC.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="icon.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

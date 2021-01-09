@@ -353,6 +353,8 @@ Obj::Material::Material(Obj* parent, std::string name)
     this->parent = parent;
     this->name = name;
     fogDisabled = false;
+    renderMode = RenderMode::NORMAL;
+    isVisible = true;
     textureSMode = GL_REPEAT;
     textureTMode = GL_REPEAT;
 }
@@ -391,6 +393,7 @@ void Obj::Material::SetColor(ColorType t, const Color& color)
     }
 }
 
+Color dummyColor;
 Color& Obj::Material::GetColor(ColorType t)
 {
     switch (t)
@@ -405,6 +408,7 @@ Color& Obj::Material::GetColor(ColorType t)
         return specularColor;
         break;
     default:
+        return dummyColor;
         break;
     }
 }
@@ -436,14 +440,27 @@ void Obj::Material::ForceDisableFog(bool disable)
     fogDisabled = disable;
 }
 
+void Obj::Material::SetRenderMode(RenderMode mode)
+{
+    renderMode = mode;
+}
+
+void Obj::Material::SetVisible(bool visible)
+{
+    isVisible = visible;
+}
+
 void Obj::Material::Draw()
 {
+    if (!isVisible)
+        return;
+
     glDisable(GL_ALPHA_TEST);
     glDisable(GL_TEXTURE_2D);
     
     if (texture) {
         glEnable(GL_TEXTURE_2D);
-        if (texture->HasTransparency())
+        if (texture->HasTransparency() && renderMode == RenderMode::NORMAL)
         {
             glAlphaFunc(GL_GREATER, 0.5);
             glEnable(GL_ALPHA_TEST);
@@ -453,6 +470,15 @@ void Obj::Material::Draw()
     }
     else
         glBindTexture(GL_TEXTURE_2D, 0);
+
+    if (renderMode == RenderMode::MULTIPLICATIVE) {
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_DST_COLOR, GL_ZERO);
+    }
+    else if (renderMode == RenderMode::ADDITIVE) {
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_ONE, GL_ONE);
+    }
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, textureSMode);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, textureTMode);
@@ -490,6 +516,12 @@ void Obj::Material::Draw()
         }
         glEnd();
     }
+
     if (wasFogEnabled && fogDisabled)
         glEnable(GL_FOG);
+
+    if (renderMode != RenderMode::NORMAL) {
+        glDisable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    }
 }

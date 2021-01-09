@@ -341,7 +341,12 @@ public:
         if (thisMag != 0.f && otherMag != 0.f)
         {
             float multiply = copysignf(1.0f, this->Cross(other).y);
-            return Angle::FromRadians(acosf(Dot(other) / (thisMag * otherMag))) * multiply;
+            float dot = Dot(other) / (thisMag * otherMag);
+            if (dot > 1.f)
+                dot = 1.f;
+            else if (dot < -1.f)
+                dot = -1.f;
+            return Angle::FromRadians(acosf(dot)) * multiply;
         }
             
         return Angle::FromDegrees(INFINITY); // Return infinity
@@ -359,8 +364,6 @@ public:
 
     constexpr Vector2(float xVal, float yVal) : x(xVal), y(yVal) {}
 
-    float x, y;
-private:
     void operator=(const Vector2& right)
     {
         this->x = right.x;
@@ -422,6 +425,10 @@ private:
         this->x /= amount;
         this->y /= amount;
     }
+
+    float x, y;
+private:
+
 };
 
 class Point

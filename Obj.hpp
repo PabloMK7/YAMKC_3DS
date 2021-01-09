@@ -36,6 +36,12 @@ public:
 			DIFFUSE,
 			SPECULAR
 		};
+		enum class RenderMode
+		{
+			NORMAL,
+			MULTIPLICATIVE,
+			ADDITIVE
+		};
 		Material(Obj* parent, std::string name);
 		~Material();
 		std::string& GetName();
@@ -45,6 +51,8 @@ public:
 		void SetTexture(const std::string& fileName);
 		void SetTextureRepeatMode(TextureDirection dir, int mode);
 		void ForceDisableFog(bool disable);
+		void SetRenderMode(RenderMode mode);
+		void SetVisible(bool visible);
 		void Draw();
 
 	private:
@@ -58,6 +66,8 @@ public:
 		int textureSMode;
 		int textureTMode;
 		bool fogDisabled;
+		RenderMode renderMode;
+		bool isVisible;
 	};
 
 	Obj(std::string filename);

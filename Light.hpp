@@ -25,7 +25,8 @@ public:
 	void Enable();
 	void Disable();
 	void SetType(LightType type);
-	void SetPosition(const Vector3& postion);
+	void SetPosition(const Vector3& pos);
+	void SetSpotParams(const Vector3& dir, const Angle& cutOff, float exponent);
 	void SetColor(ColorType type, const Color& color);
 
 	void Update();
@@ -37,6 +38,9 @@ private:
 	GLenum light;
 	LightType type;
 	Vector3 position;
+	Vector3 direction;
+	Angle spotCuttOff = Angle::Zero();
+	float spotExponent;
 	bool enabled;
 	Color AmbientColor;
 	Color DiffuseColor;

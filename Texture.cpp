@@ -7,7 +7,9 @@
 unsigned int static loadImageFile(const char* nombre, bool& isTransparent)
 {
 	// Detección del formato, lectura y conversion a BGRA
+#pragma warning(disable:26812)
 	FREE_IMAGE_FORMAT formato = FreeImage_GetFileType(nombre, 0);
+#pragma warning(default:26812)
 	FIBITMAP* imagen = FreeImage_Load(formato, nombre);
 	if (imagen == nullptr)
 		throw "File not found.";
