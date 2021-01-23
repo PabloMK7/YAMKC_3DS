@@ -73,23 +73,27 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>D:\Documentos\Clase\4o carrera\SGI\codebase;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\Documentos\Clase\4o carrera\SGI\codebase\lib;$(LibraryPath)</LibraryPath>
-    <ReferencePath>D:\Documentos\Clase\4o carrera\SGI\codebase\bin;$(VC_ReferencesPath_x86);</ReferencePath>
+    <IncludePath>$(ProjectDir)\codebase;$(ProjectDir)\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)\codebase\lib;$(LibraryPath)</LibraryPath>
+    <ReferencePath>$(ProjectDir)\codebase\bin;$(VC_ReferencesPath_x86)</ReferencePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>D:\Documentos\Clase\4o carrera\SGI\codebase;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\Documentos\Clase\4o carrera\SGI\codebase\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)\codebase;$(ProjectDir)\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)\codebase\lib;$(LibraryPath)</LibraryPath>
+    <ReferencePath>$(ProjectDir)\codebase\bin;$(VC_ReferencesPath_x86)</ReferencePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>D:\Documentos\Clase\4o carrera\SGI\codebase;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\Documentos\Clase\4o carrera\SGI\codebase\lib;$(LibraryPath)</LibraryPath>
-    <ReferencePath>$(VC_ReferencesPath_x64)</ReferencePath>
+    <IncludePath>$(ProjectDir)\codebase;$(ProjectDir)\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)\codebase\lib;D:\Documentos\Clase\4o carrera\SGI\codebase\lib;$(LibraryPath)</LibraryPath>
+    <ReferencePath>$(ProjectDir)\codebase\bin;$(VC_ReferencesPath_x64);</ReferencePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(ProjectDir)\codebase;$(ProjectDir)\Include;$(IncludePath)</IncludePath>
+    <ReferencePath>$(ProjectDir)\codebase\bin;$(VC_ReferencesPath_x64);</ReferencePath>
+    <LibraryPath>$(ProjectDir)\codebase\lib;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -148,32 +152,32 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Collision.cpp" />
-    <ClCompile Include="Kart.cpp" />
-    <ClCompile Include="Lamp.cpp" />
-    <ClCompile Include="Light.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="Obj.cpp" />
-    <ClCompile Include="Plane.cpp" />
-    <ClCompile Include="Speedometer.cpp" />
-    <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="Source\Collision.cpp" />
+    <ClCompile Include="Source\Kart.cpp" />
+    <ClCompile Include="Source\Lamp.cpp" />
+    <ClCompile Include="Source\Light.cpp" />
+    <ClCompile Include="Source\main.cpp" />
+    <ClCompile Include="Source\Obj.cpp" />
+    <ClCompile Include="Source\Plane.cpp" />
+    <ClCompile Include="Source\Speedometer.cpp" />
+    <ClCompile Include="Source\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Collision.hpp" />
-    <ClInclude Include="Color.hpp" />
-    <ClInclude Include="Kart.hpp" />
-    <ClInclude Include="Lamp.hpp" />
-    <ClInclude Include="Light.hpp" />
-    <ClInclude Include="Obj.hpp" />
-    <ClInclude Include="Plane.hpp" />
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="Shape.hpp" />
-    <ClInclude Include="Speedometer.hpp" />
-    <ClInclude Include="Texture.hpp" />
-    <ClInclude Include="Vector.hpp" />
+    <ClInclude Include="Include\Collision.hpp" />
+    <ClInclude Include="Include\Color.hpp" />
+    <ClInclude Include="Include\Kart.hpp" />
+    <ClInclude Include="Include\Lamp.hpp" />
+    <ClInclude Include="Include\Light.hpp" />
+    <ClInclude Include="Include\Obj.hpp" />
+    <ClInclude Include="Include\Plane.hpp" />
+    <ClInclude Include="Resources\resource.h" />
+    <ClInclude Include="Include\Shape.hpp" />
+    <ClInclude Include="Include\Speedometer.hpp" />
+    <ClInclude Include="Include\Texture.hpp" />
+    <ClInclude Include="Include\Vector.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="YAMKC.rc" />
+    <ResourceCompile Include="Resources\YAMKC.rc" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="icon.ico" />
