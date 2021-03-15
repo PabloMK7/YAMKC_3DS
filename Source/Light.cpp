@@ -1,5 +1,5 @@
 #include "Light.hpp"
-
+/*
 Color Light::GlobalAmbientColor = Color(1.f, 1.f, 1.f);
 
 Light::Light(GLenum glLight)
@@ -111,3 +111,4 @@ void Light::Update()
     }
 
 }
+*/

@@ -1,6 +1,5 @@
 #pragma once
-#include <GL\glew.h>
-#include <GL\freeglut.h>
+/*
 #include "Color.hpp"
 #include "Vector.hpp"
 
@@ -46,3 +45,4 @@ private:
 	Color DiffuseColor;
 	Color SpecularColor;
 };
+*/

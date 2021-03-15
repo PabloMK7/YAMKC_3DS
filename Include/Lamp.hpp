@@ -1,6 +1,4 @@
 #pragma once
-#include <GL\glew.h>
-#include <GL\freeglut.h>
 #include "Obj.hpp"
 #include "Light.hpp"
 #include <atomic>

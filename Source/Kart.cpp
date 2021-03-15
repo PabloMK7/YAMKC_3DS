@@ -1,5 +1,4 @@
 #include "Kart.hpp"
-#include <GL/freeglut.h>
 #include <iostream>
 
 const Vector3 Kart::defaultWheelPositions[4] = {

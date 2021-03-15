@@ -339,3 +339,6 @@ ASALocalRun/
 
 # Maya related files
 */.mayaSwatches
+
+# Workspace files
+*.code-workspace

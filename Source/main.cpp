@@ -1,8 +1,6 @@
 #include <iostream>
 #include <functional>
 #include <string>
-#include <GL\glew.h>
-#include <GL\freeglut.h>
 #include "Color.hpp"
 #include "Obj.hpp"
 #include "Kart.hpp"
@@ -10,8 +8,6 @@
 #include "Lamp.hpp"
 #include "Speedometer.hpp"
 #include <ctime>
-#include <freeimage/FreeImage.h>
-#pragma comment(lib, "FreeImage.lib")
 
 // Constantes FPS
 #define FPS 60
@@ -179,8 +175,8 @@ void onTimer(int val) {
     unsigned int elapsed = currentTime - previousTime;
     previousTime = currentTime;
 
-    // Llamada a la función calc con el tiempo transcurrido a cada objeto.
-    // De esta forma, cada objeto es responsable de actualizar sus parámetros.
+    // Llamada a la funciï¿½n calc con el tiempo transcurrido a cada objeto.
+    // De esta forma, cada objeto es responsable de actualizar sus parï¿½metros.
     playerKart->Calc(elapsed);
     speedMeter->SetNeedleAngle(playerKart->GetSpeedometerAngle(elapsed));
 
@@ -198,14 +194,14 @@ void onTimer(int val) {
     glutPostRedisplay();
 }
 
-// Función de cambio de tamaño de la pantalla.
+// Funciï¿½n de cambio de tamaï¿½o de la pantalla.
 void reshape(GLint w, GLint h)
 {
     glViewport(0, 0, w, h);  
     windowW = w; windowH = h;
 }
 
-// Función ejecutada cuando se pulsa una tecla especial.
+// Funciï¿½n ejecutada cuando se pulsa una tecla especial.
 void pressSpecialKey(int key, int x, int y)
 {
     switch (key)
@@ -217,7 +213,7 @@ void pressSpecialKey(int key, int x, int y)
     }
 }
 
-// Función ejecutada cuando se pulsa una tecla.
+// Funciï¿½n ejecutada cuando se pulsa una tecla.
 void pressKey(unsigned char key, int x, int y)
 {
     switch (key)
@@ -235,7 +231,7 @@ void pressKey(unsigned char key, int x, int y)
     }
 }
 
-// Función ejecutada cuando se suelta una tecla especial.
+// Funciï¿½n ejecutada cuando se suelta una tecla especial.
 void releaseSpecialKey(int key, int x, int y)
 {
     switch (key)
@@ -256,7 +252,7 @@ void releaseKey(unsigned char key, int x, int y)
     }
 }
 
-// Inicialización de los objetos.
+// Inicializaciï¿½n de los objetos.
 void init() {
 
     glEnable(GL_DEPTH_TEST);
@@ -307,7 +303,7 @@ void init() {
     setLightFogMode(isDayMode);
 }
 
-// Destrucción de los objetos.
+// Destrucciï¿½n de los objetos.
 void exit() {
     if (dayLight) delete dayLight;
     if (nightLight) delete nightLight;

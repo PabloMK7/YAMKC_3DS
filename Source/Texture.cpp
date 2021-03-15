@@ -1,12 +1,8 @@
 #include "Texture.hpp"
 
-#include <GL/freeglut.h>
-#include <GL/glext.h>
-#include <freeimage/FreeImage.h>
-
 unsigned int static loadImageFile(const char* nombre, bool& isTransparent)
 {
-	// Detección del formato, lectura y conversion a BGRA
+	// Detecciï¿½n del formato, lectura y conversion a BGRA
 #pragma warning(disable:26812)
 	FREE_IMAGE_FORMAT formato = FreeImage_GetFileType(nombre, 0);
 #pragma warning(default:26812)

@@ -1,6 +1,4 @@
 #pragma once
-#include <GL\glew.h>
-#include <GL\freeglut.h>
 #include "Texture.hpp"
 #include "Plane.hpp"
 

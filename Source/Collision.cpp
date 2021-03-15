@@ -1,13 +1,10 @@
 #include "Collision.hpp"
 #include <iostream>
 #include <fstream>
-#include <GL/freeglut.h>
-#include <GL/glext.h>
-#include <freeimage/FreeImage.h>
 
 Collision::Collision(std::string mapfile, std::string uiMapPosFile)
 {
-	// Detección del formato, lectura y conversion a BGRA
+	// Detecciï¿½n del formato, lectura y conversion a BGRA
 	FREE_IMAGE_FORMAT format = FreeImage_GetFileType(mapfile.c_str(), 0);
 	image = (FIBITMAP*)FreeImage_Load(format, mapfile.c_str());
 	if (image == nullptr)

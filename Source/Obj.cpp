@@ -1,9 +1,7 @@
 #include "Obj.hpp"
 #include <fstream>
 #include <iostream>
-#include <sstream> 
-#include <GL\glew.h>
-#include <GL/freeglut.h>
+#include <sstream>
 
 static inline std::string& Ltrim(std::string& str)
 {
