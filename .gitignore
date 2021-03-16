@@ -339,3 +339,16 @@ ASALocalRun/
 
 # Maya related files
 */.mayaSwatches
+
+# Workspace files
+*.code-workspace
+.vscode/
+/romfs/t3x/
+/build/
+.DS_Store
+/data/.DS_Store
+/gfx/.DS_Store
+/include/.DS_Store
+/intellisense/.DS_Store
+/romfs/.DS_Store
+/source/.DS_Store
