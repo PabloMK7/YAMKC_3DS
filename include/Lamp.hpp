@@ -6,7 +6,7 @@
 class Lamp
 {
 public:
-	Lamp(Vector3& pos, Angle3& rot, Vector3& scal, GLenum light);
+	Lamp(Vector3& pos, Angle3& rot, Vector3& scal); //GLenum light);
 	~Lamp();
 	void setDayMode(bool isDay);
 	void EnableLight(bool enable);
@@ -20,6 +20,6 @@ private:
 	Angle3 rotation;
 	Vector3 scale;
 	Obj* lampObject;
-	Light* lampLight;
+	//Light* lampLight;
 	bool dayMode;
 };

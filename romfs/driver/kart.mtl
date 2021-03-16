@@ -3,6 +3,6 @@ illum 4
 Kd 0.80 0.80 0.80
 Ka 0.37 0.37 0.37
 Tf 1.00 1.00 1.00
-map_Kd crashcar.png
+map_Kd crashcar.t3x
 Ni 1.00
 Ks 0.50 0.50 0.50

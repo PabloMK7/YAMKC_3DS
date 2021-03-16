@@ -9,20 +9,12 @@ public:
 	Kart(std::string kartName, std::string wheelName, std::string driverName, std::string shadowName, Collision* col);
 	~Kart();
 
-	enum class Key {
-		KEY_A = (1 << 0),
-		KEY_B = (1 << 1),
-		KEY_X = (1 << 2),
-		KEY_Left = (1 << 3),
-		KEY_Right = (1 << 4)
-	};
-
-	void UpdateCamera(bool birdsView);
+	void UpdateCamera();
 	void UpdateViewPort(int w, int h);
 	void Draw();
 	void Calc(int elapsedMsec);
-	void KeyPress(Key key);
-	void KeyRelease(Key key);
+	void KeyPress(int key);
+	void KeyRelease(int key);
 
 	Angle GetSpeedometerAngle(int elapsedMsec);
 

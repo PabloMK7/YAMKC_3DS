@@ -5,9 +5,9 @@
 DVLB_s* Graphics::vshader_dvlb = nullptr;
 shaderProgram_s Graphics::program;
 int Graphics::uLoc_projection, Graphics::uLoc_modelView;
-C3D_Mtx Graphics::projection;
-C3D_Mtx Graphics::modelview;
 Graphics::GPUVertex* Graphics::vbo_data = nullptr;
+C3D_MtxStack Graphics::projStack;
+C3D_MtxStack Graphics::modelStack;
 
 bool Graphics::VertexArray::lockCreate = false;
 u32 Graphics::VertexArray::currIndex = 0;
@@ -23,6 +23,12 @@ void Graphics::SceneInit()
 	// Get the location of the uniforms
 	uLoc_projection   = shaderInstanceGetUniformLocation(program.vertexShader, "projection");
 	uLoc_modelView    = shaderInstanceGetUniformLocation(program.vertexShader, "modelView");
+
+	// Create the matrix stacks
+	MtxStack_Init(&projStack);
+	MtxStack_Bind(&projStack, GPU_VERTEX_SHADER, uLoc_projection, 4);
+	MtxStack_Init(&modelStack);
+	MtxStack_Bind(&modelStack, GPU_VERTEX_SHADER, uLoc_modelView, 4);
 
     // Initialize the vertex buffer
     InitVBO();

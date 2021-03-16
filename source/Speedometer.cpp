@@ -4,11 +4,10 @@ const float Speedometer::screenCover = 0.3f;
 
 Speedometer::Speedometer()
 {
-    meterTex = new Texture("data/speedometer/meter.png");
-    needleTex = new Texture("data/speedometer/needle.png");
+    meterTex = new Texture("romfs:/speedometer/meter.t3x");
+    needleTex = new Texture("romfs:/speedometer/needle.t3x");
     meterPlane.GetScale() = Vector3(2.f * screenCover, 2.f * screenCover, 2.f * screenCover);
     needlePlane.GetScale() = Vector3(2.5f * screenCover, 2.5f * screenCover, 2.5f * screenCover);
-    // -1 - screenCover/2
     meterPlane.GetPosition() = Vector3(0.f, -(1 - screenCover / 1.f) + 0.05f, 0.f);
     needlePlane.GetPosition() = Vector3(0.f, -1 + 0.089f, 0.01f);
 }
@@ -24,8 +23,9 @@ void Speedometer::SetNeedleAngle(const Angle& angle)
     needlePlane.GetRotation().z = angle * -1;
 }
 
-void Speedometer::Draw(GLint w, GLint h)
+void Speedometer::Draw(int w, int h)
 {
+    /*
     float ratio = (float)w / h;
 
     glClear(GL_DEPTH_BUFFER_BIT);
@@ -51,4 +51,5 @@ void Speedometer::Draw(GLint w, GLint h)
     needlePlane.Draw();
 
     glDisable(GL_BLEND);
+    */
 }

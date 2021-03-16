@@ -5,6 +5,7 @@
 #include "Color.hpp"
 #include "Texture.hpp"
 #include "Graphics.hpp"
+#include <tuple>
 
 class Obj
 {

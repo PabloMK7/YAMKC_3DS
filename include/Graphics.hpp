@@ -48,6 +48,17 @@ public:
         static u32 currIndex;
     };
     
+    static C3D_Mtx* GetProjectionMtx() {return MtxStack_Cur(&projStack);}
+    static C3D_Mtx* GetModelViewMtx() {return MtxStack_Cur(&modelStack);}
+
+    static C3D_Mtx* PushProjectionMtx() {return MtxStack_Push(&projStack);}
+    static C3D_Mtx* PushModelViewMtx() {return MtxStack_Push(&modelStack);}
+    static C3D_Mtx* PopProjectionMtx() {return MtxStack_Pop(&projStack);}
+    static C3D_Mtx* PopModelViewMtx() {return MtxStack_Pop(&modelStack);}
+
+    static void UpdateProjectionMtx() {MtxStack_Update(&projStack);}
+    static void UpdateModelViewMtx() {MtxStack_Update(&modelStack);}
+
 friend class VertexArray;
 private:
     static void InitVBO(void);
@@ -58,7 +69,7 @@ private:
     static DVLB_s* vshader_dvlb;
     static shaderProgram_s program;
     static int uLoc_projection, uLoc_modelView;
-    static C3D_Mtx projection;
-    static C3D_Mtx modelview;
+    static C3D_MtxStack projStack;
+    static C3D_MtxStack modelStack;
     static GPUVertex* vbo_data;
 };

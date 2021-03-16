@@ -4,6 +4,7 @@
 
 Collision::Collision(std::string mapfile, std::string uiMapPosFile)
 {
+	/*
 	// Detecci�n del formato, lectura y conversion a BGRA
 	FREE_IMAGE_FORMAT format = FreeImage_GetFileType(mapfile.c_str(), 0);
 	image = (FIBITMAP*)FreeImage_Load(format, mapfile.c_str());
@@ -23,11 +24,12 @@ Collision::Collision(std::string mapfile, std::string uiMapPosFile)
 	}
 	myFile.seekg(4 * sizeof(float), myFile.beg);
 	myFile.read((char*)imageCoords, sizeof(imageCoords));
+	*/
 }
 
 Collision::~Collision()
 {
-	FreeImage_Unload((FIBITMAP*)image);
+	//FreeImage_Unload((FIBITMAP*)image);
 }
 
 Color Collision::GetColorAtPixel(unsigned int x, unsigned int z)
@@ -37,9 +39,10 @@ Color Collision::GetColorAtPixel(unsigned int x, unsigned int z)
 	if (z >= imageW)
 		z = imageW - 1;
 
-	RGBQUAD col;
+	/*RGBQUAD col;
 	FreeImage_GetPixelColor((FIBITMAP*)image, x, imageH - z, &col);
-	return Color(col.rgbRed, col.rgbGreen, col.rgbBlue);
+	return Color(col.rgbRed, col.rgbGreen, col.rgbBlue);*/
+	return Color(0, 0, 0);
 }
 
 Color Collision::GetColorAtPosition(const Vector3& position)

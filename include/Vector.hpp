@@ -335,7 +335,7 @@ public:
             *this /= mag;
     }
 
-    Angle Angle(const Vector3& other) {
+    Angle GetAngle(const Vector3& other) {
         float otherMag = other.Magnitude();
         float thisMag = Magnitude();
         if (thisMag != 0.f && otherMag != 0.f)

@@ -1,6 +1,7 @@
 #include "Obj.hpp"
 #include <fstream>
 #include <iostream>
+#include "stdio.h"
 #include <sstream>
 #include <algorithm>
 
@@ -46,10 +47,22 @@ static inline std::pair<std::string, std::string> SplitFilename(const std::strin
 
 Obj::Obj(std::string filename)
 {
-    std::ifstream objFile(filename);
-    if (!objFile.is_open())
-        throw "File not found.";
+    FILE* file = fopen(filename.c_str(), "rb");
+    
+    if (!file)
+    {
+        std::cout << "Failed to open obj" << std::endl;
+        return;
+    }
+    
+    fseek(file, 0, SEEK_END);
+    u32 fSize = ftell(file);
+    fseek(file, 0, SEEK_SET);
+    char* buff = (char*)malloc(fSize);
+    fread(buff, 1, fSize, file);
+    fclose(file);
 
+    std::istringstream objFile(buff);
     matLib = "";
     std::string line;
     std::string currMat = "Default";
@@ -66,95 +79,95 @@ Obj::Obj(std::string filename)
 
         if (pieces[0] == "mtllib") {
             if (pieces.size() != 2)
-                throw "Invalid matlib dimensions.";
+                ;
             matLib = SplitFilename(filename).first + kPathSeparator + Trim(pieces[1]);
         }
         else if (pieces[0] == "usemtl") {
             if (pieces.size() != 2)
-                throw "Invalid usemtl dimensions.";
+                ;
             currMat = Trim(pieces[1]);
         }
         else if (pieces[0] == "v") {
             if (pieces.size() != 4)
-                throw "Invalid vertex dimensions.";
-            try
+                ;
+            
             {
                 objVertices.push_back(Vector3(std::stof(pieces[1]), std::stof(pieces[2]), std::stof(pieces[3])));
             }
-            catch (const std::exception&)
+            
             {
-                throw "Invalid vertex values.";
+                ;
             }
         }
         else if (pieces[0] == "vn") {
             if (pieces.size() != 4)
-                throw "Invalid normal dimensions.";
-            try
+                ;
+            
             {
                 Vector3 normal = Vector3(std::stof(pieces[1]), std::stof(pieces[2]), std::stof(pieces[3]));
                 normal.Normalize();
                 objNormals.push_back(normal);
             }
-            catch (const std::exception&)
+            
             {
-                throw "Invalid normal values.";
+                ;
             }
         }
         else if (pieces[0] == "vt") {
             if (pieces.size() != 3)
-                throw "Invalid texCoord dimensions.";
-            try
+                ;
+            
             {
                 objTexCoords.push_back(Vector2(std::stof(pieces[1]), std::stof(pieces[2])));
             }
-            catch (const std::exception&)
+            
             {
-                throw "Invalid texCoord values.";
+                ;
             }
         }
         else if (pieces[0] == "f") {
             if (pieces.size() != 4)
-                throw "Invalid face dimensions.";
+                ;
             int vertex[3], normals[3], texCoords[3];
             for (int i = 0; i < 3; i++) {
                 vertex[i] = normals[i] = texCoords[i] = -1;
                 auto subParts = Split(pieces[i + 1], '/', false);
                 if (subParts.empty() || subParts[0].empty())
-                    throw "Invalid face formatting.";
-                try
+                    ;
+                
                 {
                     vertex[i] = std::stoi(subParts[0]) - 1;
                     if (vertex[i] < 0)
-                        throw "";
+                        ;
                 }
-                catch (const std::exception&)
+                
                 {
-                    throw "Invalid face formatting.";
+                    ;
                 }
                 if ((subParts.size() == 3 || subParts.size() == 2) && !subParts[1].empty())
                 {
-                    try
+                    
                     {
                         texCoords[i] = std::stoi(subParts[1]) - 1;
                         if (texCoords[i] < 0)
-                            throw "";
+                            ;
                     }
-                    catch (const std::exception&)
+                    
                     {
-                        throw "Invalid face formatting.";
+                        ;
                     }
                 }
                 if (subParts.size() == 3 && !subParts[2].empty())
                 {
-                    try
+                    
                     {
                         normals[i] = std::stoi(subParts[2]) - 1;
                         if (normals[i] < 0)
-                            throw "";
+                            ;
                     }
-                    catch (const std::exception&)
+                    
                     {
-                        throw "Invalid face formatting.";
+                        ;
                     }
                 }                
             }
@@ -186,9 +199,11 @@ Obj::Obj(std::string filename)
 
         }
     }
+    objFile.clear();
+    free(buff);
+    ConvertToVBO();
     if (!matLib.empty())
         LoadMatlib(matLib);
-    ConvertToVBO();
 }
 
 Obj::~Obj()
@@ -197,19 +212,20 @@ Obj::~Obj()
 
 void Obj::Draw()
 {
-    glPushMatrix();
-    glTranslatef(position.x, position.y, position.z);
-    glRotatef(rotation.x.AsDegrees(), 1.f, 0.f, 0.f);
-    glRotatef(rotation.y.AsDegrees(), 0.f, 1.f, 0.f);
-    glRotatef(rotation.z.AsDegrees(), 0.f, 0.f, 1.f);
-    glRotatef(preRotation.x.AsDegrees(), 1.f, 0.f, 0.f);
-    glRotatef(preRotation.y.AsDegrees(), 0.f, 1.f, 0.f);
-    glRotatef(preRotation.z.AsDegrees(), 0.f, 0.f, 1.f);
-    glScalef(scale.x, scale.y, scale.z);
+    C3D_Mtx* m = Graphics::PushModelViewMtx();
+    Mtx_Translate(m, position.x, position.y, position.z, true);
+    Mtx_RotateX(m, rotation.x.AsRadians(), true);
+    Mtx_RotateY(m, rotation.y.AsRadians(), true);
+    Mtx_RotateZ(m, rotation.z.AsRadians(), true);
+    Mtx_RotateX(m, preRotation.x.AsRadians(), true);
+    Mtx_RotateY(m, preRotation.y.AsRadians(), true);
+    Mtx_RotateZ(m, preRotation.z.AsRadians(), true);
+    Mtx_Scale(m, scale.x, scale.y, scale.z);
+    Graphics::UpdateModelViewMtx();
 
     for (auto it = materials.begin(); it != materials.end(); it++)
         (*it).Draw();
-    glPopMatrix();
+    Graphics::PopModelViewMtx();
 }
 
 Vector3& Obj::GetPosition()
@@ -249,10 +265,19 @@ Obj::Material& Obj::GetMaterial(std::string name)
 
 void Obj::LoadMatlib(std::string filename)
 {
-    std::ifstream mtlFile(filename);
-    if (!mtlFile.is_open())
-        throw "File not found.";
+    FILE* file = fopen(filename.c_str(), "rb");
+    
+    if (!file)
+        std::cout << "Failed to open mtl" << std::endl;
+    
+    fseek(file, 0, SEEK_END);
+    u32 fSize = ftell(file);
+    fseek(file, 0, SEEK_SET);
+    char* buff = (char*)malloc(fSize);
+    fread(buff, 1, fSize, file);
+    fclose(file);
 
+    std::istringstream mtlFile(buff);
     matLib = "";
     std::string line;
     std::string currMat = "Default";
@@ -265,67 +290,69 @@ void Obj::LoadMatlib(std::string filename)
 
         if (pieces[0] == "newmtl") {
             if (pieces.size() != 2)
-                throw "Invalid usemtl dimensions.";
+                ;
             currMat = Trim(pieces[1]);
         }
         else if (pieces[0] == "Kd") {
             if (pieces.size() != 4)
-                throw "Invalid color dimensions.";
-            try
+                ;
+            
             {
                 float r = std::stof(pieces[1]);
                 float g = std::stof(pieces[2]);
                 float b = std::stof(pieces[3]);
                 if (r < 0.f || r > 1.f || g < 0.f || g > 1.f || b < 0.f || b > 1.f)
-                    throw std::exception("");
-                GetMaterial(currMat).SetColor(Material::ColorType::DIFFUSE, Color(r,g,b));
+                    ;
+                //GetMaterial(currMat).SetColor(Material::ColorType::DIFFUSE, Color(r,g,b));
             }
-            catch (const std::exception&)
+            
             {
-                throw "Invalid color format.";
+                ;
             }            
         }
         else if (pieces[0] == "Ka") {
             if (pieces.size() != 4)
-                throw "Invalid color dimensions.";
-            try
+                ;
+            
             {
                 float r = std::stof(pieces[1]);
                 float g = std::stof(pieces[2]);
                 float b = std::stof(pieces[3]);
                 if (r < 0.f || r > 1.f || g < 0.f || g > 1.f || b < 0.f || b > 1.f)
-                    throw std::exception("");
-                GetMaterial(currMat).SetColor(Material::ColorType::AMBIENT, Color(r, g, b));
+                    ;
+                //GetMaterial(currMat).SetColor(Material::ColorType::AMBIENT, Color(r, g, b));
             }
-            catch (const std::exception&)
+            
             {
-                throw "Invalid color format.";
+                ;
             }
         }
         else if (pieces[0] == "Ks") {
             if (pieces.size() != 4)
-                throw "Invalid color dimensions.";
-            try
+                ;
+            
             {
                 float r = std::stof(pieces[1]);
                 float g = std::stof(pieces[2]);
                 float b = std::stof(pieces[3]);
                 if (r < 0.f || r > 1.f || g < 0.f || g > 1.f || b < 0.f || b > 1.f)
-                    throw std::exception("");
-                GetMaterial(currMat).SetColor(Material::ColorType::SPECULAR, Color(r, g, b));
+                    ;
+                //GetMaterial(currMat).SetColor(Material::ColorType::SPECULAR, Color(r, g, b));
             }
-            catch (const std::exception&)
+            
             {
-                throw "Invalid color format.";
+                ;
             }
         }
         else if (pieces[0] == "map_Kd") {
             if (pieces.size() != 2)
-                throw "Invalid map_Kd dimensions.";
+                ;
             std::string texFile = SplitFilename(filename).first + kPathSeparator + Trim(pieces[1]);
             GetMaterial(currMat).SetTexture(texFile);
         }
     }
+    mtlFile.clear();
+    free(buff);
 }
 
 void Obj::ConvertToVBO(void)
@@ -338,17 +365,16 @@ Obj::Material::Material(Obj* parent, std::string name)
 {
     this->parent = parent;
     this->name = name;
-    fogDisabled = false;
-    renderMode = RenderMode::NORMAL;
     isVisible = true;
-    textureSMode = GL_REPEAT;
-    textureTMode = GL_REPEAT;
+    vArray = nullptr;
 }
 
 Obj::Material::~Material()
 {
     if (texture)
         delete texture;
+    if (vArray)
+        Graphics::VertexArray::Dispose(vArray);
 }
 
 std::string& Obj::Material::GetName()
@@ -361,74 +387,11 @@ void Obj::Material::AddFace(const Obj::Face& face)
     faces.push_back(face);
 }
 
-void Obj::Material::SetColor(ColorType t, const Color& color)
-{
-    switch (t)
-    {
-    case Obj::Material::ColorType::AMBIENT:
-        ambientColor = color;
-        break;
-    case Obj::Material::ColorType::DIFFUSE:
-        diffuseColor = color;
-        break;
-    case Obj::Material::ColorType::SPECULAR:
-        specularColor = color;
-        break;
-    default:
-        break;
-    }
-}
-
-Color dummyColor;
-Color& Obj::Material::GetColor(ColorType t)
-{
-    switch (t)
-    {
-    case Obj::Material::ColorType::AMBIENT:
-        return ambientColor;
-        break;
-    case Obj::Material::ColorType::DIFFUSE:
-        return diffuseColor;
-        break;
-    case Obj::Material::ColorType::SPECULAR:
-        return specularColor;
-        break;
-    default:
-        return dummyColor;
-        break;
-    }
-}
-
 void Obj::Material::SetTexture(const std::string& fileName)
 {
     if (texture)
         delete texture;
     texture = new Texture(fileName);
-}
-
-void Obj::Material::SetTextureRepeatMode(TextureDirection dir, int mode)
-{
-    switch (dir)
-    {
-    case Obj::Material::TextureDirection::DIR_S:
-        textureSMode = mode;
-        break;
-    case Obj::Material::TextureDirection::DIR_T:
-        textureTMode = mode;
-        break;
-    default:
-        break;
-    }
-}
-
-void Obj::Material::ForceDisableFog(bool disable)
-{
-    fogDisabled = disable;
-}
-
-void Obj::Material::SetRenderMode(RenderMode mode)
-{
-    renderMode = mode;
 }
 
 void Obj::Material::SetVisible(bool visible)
@@ -440,76 +403,25 @@ void Obj::Material::Draw()
 {
     if (!isVisible)
         return;
-
-    glDisable(GL_ALPHA_TEST);
-    glDisable(GL_TEXTURE_2D);
     
-    if (texture) {
-        glEnable(GL_TEXTURE_2D);
-        if (texture->HasTransparency() && renderMode == RenderMode::NORMAL)
-        {
-            glAlphaFunc(GL_GREATER, 0.5);
-            glEnable(GL_ALPHA_TEST);
-        }
+    if (texture)
+    { // Modulate the vertex color with the texture
+        C3D_TexEnv* env = C3D_GetTexEnv(0);
+        C3D_TexEnvInit(env);
+        C3D_TexEnvSrc(env, C3D_Both, GPU_PRIMARY_COLOR, GPU_TEXTURE0, GPU_CONSTANT); // Last arg is unused
+        C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
 
         texture->Bind();
     }
     else
-        glBindTexture(GL_TEXTURE_2D, 0);
-
-    if (renderMode == RenderMode::MULTIPLICATIVE) {
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_DST_COLOR, GL_ZERO);
-    }
-    else if (renderMode == RenderMode::ADDITIVE) {
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_ONE, GL_ONE);
+    { // Only use the vertex color
+        C3D_TexEnv* env = C3D_GetTexEnv(0);
+        C3D_TexEnvInit(env);
+        C3D_TexEnvSrc(env, C3D_Both, GPU_PRIMARY_COLOR, GPU_CONSTANT, GPU_CONSTANT); // Last 2 args is unused
+        C3D_TexEnvFunc(env, C3D_Both, GPU_REPLACE);
     }
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, textureSMode);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, textureTMode);
-    
-    bool lightEnabled = glIsEnabled(GL_LIGHTING) == GL_TRUE;
-    if (lightEnabled) {
-        GLfloat args[4];
-        args[0] = ambientColor.r; args[1] = ambientColor.g; args[2] = ambientColor.b; args[3] = ambientColor.a;
-        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, args);
-        args[0] = diffuseColor.r; args[1] = diffuseColor.g; args[2] = diffuseColor.b; args[3] = diffuseColor.a;
-        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, args);
-        args[0] = specularColor.r; args[1] = specularColor.g; args[2] = specularColor.b; args[3] = specularColor.a;
-        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, args);
-        args[0] = 0.f; args[1] = 0.f; args[2] = 0.f; args[3] = 0.f;
-        glMaterialfv(GL_FRONT, GL_EMISSION, args);
-    }
-    else
-        glColor4f(diffuseColor.r, diffuseColor.g, diffuseColor.b, diffuseColor.a);
-    
-
-    bool wasFogEnabled = glIsEnabled(GL_FOG) == GL_TRUE;
-    if (wasFogEnabled && fogDisabled)
-        glDisable(GL_FOG);
-    for (auto it = faces.begin(); it != faces.end(); it++) {
-        Face &currFace = *it;
-        glBegin(GL_TRIANGLES);
-        for (int i = 0; i < 3; i++) {
-            Vector3 normal = currFace.GetNormal(parent, i);
-            Vector2 texCoord = currFace.GetTexCoord(parent, i);
-            Vector3 vert = currFace.GetVertex(parent, i);
-
-            glNormal3f(normal.x, normal.y, normal.z);
-            glTexCoord2f(texCoord.x, texCoord.y);
-            glVertex3f(vert.x, vert.y, vert.z);
-        }
-        glEnd();
-    }
-
-    if (wasFogEnabled && fogDisabled)
-        glEnable(GL_FOG);
-
-    if (renderMode != RenderMode::NORMAL) {
-        glDisable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    }
+    vArray->Draw(GPU_TRIANGLES);
 }
 
 void Obj::Material::ConvertToVBO(void)

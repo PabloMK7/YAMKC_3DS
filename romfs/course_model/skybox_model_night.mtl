@@ -3,7 +3,7 @@ illum 4
 Kd 1.00 1.00 1.00
 Ka 1.00 1.00 1.00
 Tf 1.00 1.00 1.00
-map_Kd hills1_night.png
+map_Kd hills1_night.t3x
 Ni 1.00
 Ks 0.33 0.33 0.33
 Ns 0.06
@@ -12,7 +12,7 @@ illum 4
 Kd 1.00 1.00 1.00
 Ka 1.00 1.00 1.00
 Tf 1.00 1.00 1.00
-map_Kd trees1_night.png
+map_Kd trees1_night.t3x
 Ni 1.00
 Ks 0.33 0.33 0.33
 Ns 0.06
@@ -21,14 +21,14 @@ illum 4
 Kd 1.00 1.00 1.00
 Ka 0.00 0.00 0.00
 Tf 1.00 1.00 1.00
-map_Kd moon.png
+map_Kd moon.t3x
 Ni 1.00
 newmtl mat_sky_behind_night
 illum 4
 Kd 1.00 1.00 1.00
 Ka 1.00 1.00 1.00
 Tf 1.00 1.00 1.00
-map_Kd sky_behind1_night.png
+map_Kd sky_behind1_night.t3x
 Ni 1.00
 Ks 0.33 0.33 0.33
 Ns 0.06
@@ -37,7 +37,7 @@ illum 4
 Kd 1.00 1.00 1.00
 Ka 1.00 1.00 1.00
 Tf 1.00 1.00 1.00
-map_Kd skytop1_night.png
+map_Kd skytop1_night.t3x
 Ni 1.00
 Ks 0.33 0.33 0.33
 Ns 0.06

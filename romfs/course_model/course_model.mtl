@@ -3,7 +3,7 @@ illum 4
 Kd 1.00 1.00 1.00
 Ka 0.80 0.80 0.80
 Tf 1.00 1.00 1.00
-map_Kd ermiikart_cmp2.png
+map_Kd ermiikart_cmp2.t3x
 Ni 1.00
 Ks 0.33 0.33 0.33
 Ns 0.06
@@ -12,7 +12,7 @@ illum 4
 Kd 0.80 0.80 0.80
 Ka 0.20 0.20 0.20
 Tf 1.00 1.00 1.00
-map_Kd check1_cmp1.png
+map_Kd check1_cmp1.t3x
 Ni 1.00
 Ks 0.33 0.33 0.33
 Ns 0.06
@@ -21,7 +21,7 @@ illum 4
 Kd 0.80 0.80 0.80
 Ka 0.20 0.20 0.20
 Tf 1.00 1.00 1.00
-map_Kd grass1_cmp1.png
+map_Kd grass1_cmp1.t3x
 Ni 1.00
 Ks 0.33 0.33 0.33
 Ns 0.06
@@ -30,7 +30,7 @@ illum 4
 Kd 0.80 0.80 0.80
 Ka 0.20 0.20 0.20
 Tf 1.00 1.00 1.00
-map_Kd transition.png
+map_Kd transition.t3x
 Ni 1.00
 Ks 0.33 0.33 0.33
 Ns 0.06
@@ -39,7 +39,7 @@ illum 4
 Kd 0.80 0.80 0.80
 Ka 0.20 0.20 0.20
 Tf 1.00 1.00 1.00
-map_Kd road1.png
+map_Kd road1.t3x
 Ni 1.00
 Ks 0.33 0.33 0.33
 Ns 0.06
@@ -48,7 +48,7 @@ illum 4
 Kd 0.80 0.80 0.80
 Ka 0.20 0.20 0.20
 Tf 1.00 1.00 1.00
-map_Kd road2.png
+map_Kd road2.t3x
 Ni 1.00
 Ks 0.33 0.33 0.33
 Ns 0.06
@@ -57,7 +57,7 @@ illum 4
 Kd 1.00 1.00 1.00
 Ka 0.80 0.80 0.80
 Tf 1.00 1.00 1.00
-map_Kd mat43_cmp3.png
+map_Kd mat43_cmp3.t3x
 Ni 1.00
 Ks 0.33 0.33 0.33
 Ns 0.06
@@ -66,7 +66,7 @@ illum 4
 Kd 0.80 0.80 0.80
 Ka 0.20 0.20 0.20
 Tf 1.00 1.00 1.00
-map_Kd Sand1_cmp1.png
+map_Kd Sand1_cmp1.t3x
 Ni 1.00
 Ks 0.33 0.33 0.33
 Ns 0.06
@@ -75,7 +75,7 @@ illum 4
 Kd 0.80 0.80 0.80
 Ka 0.20 0.20 0.20
 Tf 1.00 1.00 1.00
-map_Kd trees.png
+map_Kd trees.t3x
 Ni 1.00
 Ks 0.33 0.33 0.33
 Ns 0.06
@@ -84,7 +84,7 @@ illum 4
 Kd 0.80 0.80 0.80
 Ka 0.40 0.40 0.40
 Tf 1.00 1.00 1.00
-map_Kd m_wall1.png
+map_Kd m_wall1.t3x
 Ni 1.00
 Ks 0.33 0.33 0.33
 Ns 0.06

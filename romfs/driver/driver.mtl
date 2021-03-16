@@ -3,7 +3,7 @@ illum 4
 Kd 0.80 0.80 0.80
 Ka 0.37 0.37 0.37
 Tf 1.00 1.00 1.00
-map_Kd ys_body.png
+map_Kd ys_body.t3x
 Ni 1.00
 Ks 0.30 0.30 0.30
 newmtl mat_driver_eyes
@@ -11,6 +11,6 @@ illum 4
 Kd 0.80 0.80 0.80
 Ka 0.37 0.37 0.37
 Tf 1.00 1.00 1.00
-map_Kd ys_eye.0.png
+map_Kd ys_eye.0.t3x
 Ni 1.00
 Ks 0.30 0.30 0.30

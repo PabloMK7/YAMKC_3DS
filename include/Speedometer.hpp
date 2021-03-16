@@ -10,7 +10,7 @@ public:
 
 	void SetNeedleAngle(const Angle& angle);
 
-	void Draw(GLint w, GLint h);
+	void Draw(int w, int h);
 
 private:
 	Plane meterPlane;

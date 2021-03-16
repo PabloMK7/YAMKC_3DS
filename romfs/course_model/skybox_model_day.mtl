@@ -3,7 +3,7 @@ illum 4
 Kd 1.00 1.00 1.00
 Ka 1.00 1.00 1.00
 Tf 1.00 1.00 1.00
-map_Kd hills1.png
+map_Kd hills1.t3x
 Ni 1.00
 Ks 0.33 0.33 0.33
 Ns 0.06
@@ -12,7 +12,7 @@ illum 4
 Kd 1.00 1.00 1.00
 Ka 1.00 1.00 1.00
 Tf 1.00 1.00 1.00
-map_Kd trees1.png
+map_Kd trees1.t3x
 Ni 1.00
 Ks 0.33 0.33 0.33
 Ns 0.06
@@ -21,7 +21,7 @@ illum 4
 Kd 1.00 1.00 1.00
 Ka 1.00 1.00 1.00
 Tf 1.00 1.00 1.00
-map_Kd sky_behind1.png
+map_Kd sky_behind1.t3x
 Ni 1.00
 Ks 0.33 0.33 0.33
 Ns 0.06
@@ -30,7 +30,7 @@ illum 4
 Kd 1.00 1.00 1.00
 Ka 1.00 1.00 1.00
 Tf 1.00 1.00 1.00
-map_Kd skytop1.png
+map_Kd skytop1.t3x
 Ni 1.00
 Ks 0.33 0.33 0.33
 Ns 0.06

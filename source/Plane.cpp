@@ -32,6 +32,7 @@ Vector3& Plane::GetScale()
 
 void Plane::Draw()
 {
+    /*
     glPushMatrix();
     glTranslatef(position.x, position.y, position.z);
     glRotatef(rotation.x.AsDegrees(), 1.f, 0.f, 0.f);
@@ -51,4 +52,5 @@ void Plane::Draw()
     glEnd();
 
     glPopMatrix();
+    */
 }
