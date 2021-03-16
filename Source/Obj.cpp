@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <algorithm>
 
 static inline std::string& Ltrim(std::string& str)
 {
@@ -34,12 +35,7 @@ static inline std::vector<std::string> Split(const std::string& str, char splitC
     return seglist;
 }
 
-static const char kPathSeparator =
-#ifdef _WIN32
-'\\';
-#else
-'/';
-#endif
+static const char kPathSeparator = '/';
 
 static inline std::pair<std::string, std::string> SplitFilename(const std::string& str)
 {
@@ -57,6 +53,10 @@ Obj::Obj(std::string filename)
     matLib = "";
     std::string line;
     std::string currMat = "Default";
+
+    std::vector<Vector3> objVertices;
+    std::vector<Vector3> objNormals;
+    std::vector<Vector2> objTexCoords;
 
     while(std::getline(objFile, line)) {
         line = Trim(line);
@@ -79,7 +79,7 @@ Obj::Obj(std::string filename)
                 throw "Invalid vertex dimensions.";
             try
             {
-                vertices.push_back(Vector3(std::stof(pieces[1]), std::stof(pieces[2]), std::stof(pieces[3])));
+                objVertices.push_back(Vector3(std::stof(pieces[1]), std::stof(pieces[2]), std::stof(pieces[3])));
             }
             catch (const std::exception&)
             {
@@ -93,7 +93,7 @@ Obj::Obj(std::string filename)
             {
                 Vector3 normal = Vector3(std::stof(pieces[1]), std::stof(pieces[2]), std::stof(pieces[3]));
                 normal.Normalize();
-                normals.push_back(normal);
+                objNormals.push_back(normal);
             }
             catch (const std::exception&)
             {
@@ -105,7 +105,7 @@ Obj::Obj(std::string filename)
                 throw "Invalid texCoord dimensions.";
             try
             {
-                texCoords.push_back(Vector2(std::stof(pieces[1]), std::stof(pieces[2])));
+                objTexCoords.push_back(Vector2(std::stof(pieces[1]), std::stof(pieces[2])));
             }
             catch (const std::exception&)
             {
@@ -125,7 +125,7 @@ Obj::Obj(std::string filename)
                 {
                     vertex[i] = std::stoi(subParts[0]) - 1;
                     if (vertex[i] < 0)
-                        throw std::exception("");
+                        throw "";
                 }
                 catch (const std::exception&)
                 {
@@ -137,7 +137,7 @@ Obj::Obj(std::string filename)
                     {
                         texCoords[i] = std::stoi(subParts[1]) - 1;
                         if (texCoords[i] < 0)
-                            throw std::exception("");
+                            throw "";
                     }
                     catch (const std::exception&)
                     {
@@ -150,7 +150,7 @@ Obj::Obj(std::string filename)
                     {
                         normals[i] = std::stoi(subParts[2]) - 1;
                         if (normals[i] < 0)
-                            throw std::exception("");
+                            throw "";
                     }
                     catch (const std::exception&)
                     {
@@ -158,12 +158,37 @@ Obj::Obj(std::string filename)
                     }
                 }                
             }
-            GetMaterial(currMat).AddFace(Face(vertex, texCoords, normals));
+            Graphics::GPUVertex vInfo[3];
+            for (int i = 0; i < 3; i++)
+            {
+                Vector3 position(0.f, 0.f, 0.f);
+                Vector3 normal(0.f, 1.f, 0.f);
+                Vector2 texCoord(0.f, 0.f);
+                if (vertex[i] != -1)
+                    position = objVertices[vertex[i]];
+                if (normals[i] != -1)
+                    normal = objNormals[normals[i]];
+                if (texCoords[i] != -1)
+                    texCoord = objTexCoords[texCoords[i]];
+                
+                vInfo[i].position.x = position.x;
+                vInfo[i].position.y = position.y;
+                vInfo[i].position.z = position.z;
+                vInfo[i].normal.x = normal.x;
+                vInfo[i].normal.y = normal.y;
+                vInfo[i].normal.z = normal.z;
+                vInfo[i].texcoord.u = texCoord.x;
+                vInfo[i].texcoord.v = texCoord.y;
+                vInfo[i].color = {1.f, 1.f, 1.f, 1.f};
+                
+            }
+            GetMaterial(currMat).AddFace(std::make_tuple(vInfo[0], vInfo[1], vInfo[2]));
 
         }
     }
     if (!matLib.empty())
         LoadMatlib(matLib);
+    ConvertToVBO();
 }
 
 Obj::~Obj()
@@ -303,47 +328,10 @@ void Obj::LoadMatlib(std::string filename)
     }
 }
 
-Vector3& Obj::GetVertexFromID(int id)
+void Obj::ConvertToVBO(void)
 {
-    return vertices[id];
-}
-
-Vector2& Obj::GetTexCoordFromID(int id)
-{
-    return texCoords[id];
-}
-
-Vector3& Obj::GetNormalFromID(int id)
-{
-    return normals[id];
-}
-
-Obj::Face::Face(int vIds[3], int tIds[3], int nIds[3])
-{
-    memcpy(verticeIds, vIds, sizeof(verticeIds));
-    memcpy(textureCoordIds, tIds, sizeof(textureCoordIds));
-    memcpy(normalIds, nIds, sizeof(normalIds));
-}
-
-Vector3 Obj::Face::GetVertex(Obj* parent, int point)
-{
-    if (verticeIds[point] != -1)
-        return parent->GetVertexFromID(verticeIds[point]);
-    return Vector3();
-}
-
-Vector2 Obj::Face::GetTexCoord(Obj* parent, int point)
-{
-    if (textureCoordIds[point] != -1)
-        return parent->GetTexCoordFromID(textureCoordIds[point]);
-    return Vector2();
-}
-
-Vector3 Obj::Face::GetNormal(Obj* parent, int point)
-{
-    if (normalIds[point] != -1)
-        return parent->GetNormalFromID(normalIds[point]);
-    return Vector3();
+    for (auto it = materials.begin(); it != materials.end(); it++)
+        (*it).ConvertToVBO();
 }
 
 Obj::Material::Material(Obj* parent, std::string name)
@@ -522,4 +510,16 @@ void Obj::Material::Draw()
         glDisable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
+}
+
+void Obj::Material::ConvertToVBO(void)
+{
+    vArray = Graphics::VertexArray::Create();
+    for (auto it = faces.cbegin(); it != faces.cend(); it++) {
+        vArray->AddVertex(std::get<0>(*it));
+        vArray->AddVertex(std::get<1>(*it));
+        vArray->AddVertex(std::get<2>(*it));
+    }
+    vArray->Complete();
+    faces.clear();
 }

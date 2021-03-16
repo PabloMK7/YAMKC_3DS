@@ -1,5 +1,17 @@
 #include "Graphics.hpp"
 #include "vshader_shbin.h"
+#include <stdlib.h>
+
+DVLB_s* Graphics::vshader_dvlb = nullptr;
+shaderProgram_s Graphics::program;
+int Graphics::uLoc_projection, Graphics::uLoc_modelView;
+C3D_Mtx Graphics::projection;
+C3D_Mtx Graphics::modelview;
+Graphics::GPUVertex* Graphics::vbo_data = nullptr;
+
+bool Graphics::VertexArray::lockCreate = false;
+u32 Graphics::VertexArray::currIndex = 0;
+
 void Graphics::SceneInit()
 {
     // Load the vertex shader, create a shader program and bind it
@@ -12,7 +24,7 @@ void Graphics::SceneInit()
 	uLoc_projection   = shaderInstanceGetUniformLocation(program.vertexShader, "projection");
 	uLoc_modelView    = shaderInstanceGetUniformLocation(program.vertexShader, "modelView");
 
-    // Initialize the vertex buffer array
+    // Initialize the vertex buffer
     InitVBO();
 }
 
@@ -33,4 +45,38 @@ void Graphics::InitVBO(void)
 	C3D_BufInfo* bufInfo = C3D_GetBufInfo();
 	BufInfo_Init(bufInfo);
 	BufInfo_Add(bufInfo, vbo_data, sizeof(GPUVertex), 4, 0x3210); // Last arg is the order of the input attrs in reverse
+}
+
+Graphics::VertexArray* Graphics::VertexArray::Create()
+{
+	if (lockCreate)
+		return nullptr;
+	lockCreate = true;
+	return new VertexArray(currIndex);
+}
+
+void Graphics::VertexArray::Dispose(VertexArray* array)
+{
+	if (array)
+		delete array;
+}
+
+void Graphics::VertexArray::AddVertex(const Graphics::GPUVertex& vertex)
+{
+	if (!lockCreate)
+		return;
+	vbo_data[startIndex + size++] = vertex;
+}
+
+void Graphics::VertexArray::Complete()
+{
+	lockCreate = false;
+	currIndex = startIndex + size;
+	if (currIndex > MAX_VERTEX_COUNT)
+		abort();
+}
+
+void Graphics::VertexArray::Draw(GPU_Primitive_t type)
+{
+	C3D_DrawArrays(type, startIndex, size);
 }
