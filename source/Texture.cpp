@@ -17,6 +17,7 @@ static bool loadTextureFromFile(const char* fileName, C3D_Tex* texture)
 Texture::Texture(const std::string& fileName)
 {
 	correctyLoaded = loadTextureFromFile(fileName.c_str(), &textureData);
+	Wrap(GPU_REPEAT, GPU_REPEAT);
 }
 
 Texture::~Texture()

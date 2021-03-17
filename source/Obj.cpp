@@ -1,7 +1,6 @@
 #include "Obj.hpp"
 #include <fstream>
 #include <iostream>
-#include "stdio.h"
 #include <sstream>
 #include <algorithm>
 
@@ -47,22 +46,10 @@ static inline std::pair<std::string, std::string> SplitFilename(const std::strin
 
 Obj::Obj(std::string filename)
 {
-    FILE* file = fopen(filename.c_str(), "rb");
-    
-    if (!file)
-    {
+    std::ifstream objFile(filename);
+    if (!objFile.is_open())
         std::cout << "Failed to open obj" << std::endl;
-        return;
-    }
-    
-    fseek(file, 0, SEEK_END);
-    u32 fSize = ftell(file);
-    fseek(file, 0, SEEK_SET);
-    char* buff = (char*)malloc(fSize);
-    fread(buff, 1, fSize, file);
-    fclose(file);
 
-    std::istringstream objFile(buff);
     matLib = "";
     std::string line;
     std::string currMat = "Default";
@@ -199,11 +186,9 @@ Obj::Obj(std::string filename)
 
         }
     }
-    objFile.clear();
-    free(buff);
-    ConvertToVBO();
     if (!matLib.empty())
         LoadMatlib(matLib);
+    ConvertToVBO();
 }
 
 Obj::~Obj()
@@ -265,19 +250,10 @@ Obj::Material& Obj::GetMaterial(std::string name)
 
 void Obj::LoadMatlib(std::string filename)
 {
-    FILE* file = fopen(filename.c_str(), "rb");
-    
-    if (!file)
-        std::cout << "Failed to open mtl" << std::endl;
-    
-    fseek(file, 0, SEEK_END);
-    u32 fSize = ftell(file);
-    fseek(file, 0, SEEK_SET);
-    char* buff = (char*)malloc(fSize);
-    fread(buff, 1, fSize, file);
-    fclose(file);
+    std::ifstream mtlFile(filename);
+    if (!mtlFile.is_open())
+        ;
 
-    std::istringstream mtlFile(buff);
     matLib = "";
     std::string line;
     std::string currMat = "Default";
@@ -351,8 +327,6 @@ void Obj::LoadMatlib(std::string filename)
             GetMaterial(currMat).SetTexture(texFile);
         }
     }
-    mtlFile.clear();
-    free(buff);
 }
 
 void Obj::ConvertToVBO(void)

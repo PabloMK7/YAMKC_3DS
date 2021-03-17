@@ -23,7 +23,7 @@ C3D_RenderTarget* targetLeft;
 #define DISPLAY_TRANSFER_FLAGS \
 	(GX_TRANSFER_FLIP_VERT(0) | GX_TRANSFER_OUT_TILED(0) | GX_TRANSFER_RAW_COPY(0) | \
 	GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGBA8) | GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB8) | \
-	GX_TRANSFER_SCALING(GX_TRANSFER_SCALE_NO))
+	GX_TRANSFER_SCALING(GX_TRANSFER_SCALE_XY))
 
 Obj* courseModel = nullptr;
 Obj* skyboxModels[2] = { nullptr, nullptr };
@@ -216,7 +216,7 @@ int main(int argc, char** argv)
     C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
     consoleInit(GFX_BOTTOM, NULL);
     
-    targetLeft = C3D_RenderTargetCreate(240, 400, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8);
+    targetLeft = C3D_RenderTargetCreate(240 * 2, 400 * 2, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8); // Twice the size needed for anti-aliasing
     C3D_RenderTargetSetOutput(targetLeft,  GFX_TOP, GFX_LEFT,  DISPLAY_TRANSFER_FLAGS);
 
     Graphics::SceneInit();

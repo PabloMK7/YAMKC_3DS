@@ -97,8 +97,19 @@ void Kart::UpdateCamera()
     cameraPos.Rotate(oldRotation, GetPosition());
     currCameraPos.Cerp(cameraPos, shouldCerp ? cameraPositionCerpFactor : 1.f);
     Vector3 cameraLookAt = GetPosition() + cameraLookAtOffset;
-
-    Mtx_LookAt(Graphics::GetModelViewMtx(), {currCameraPos.x, currCameraPos.y, currCameraPos.z}, {cameraLookAt.x, cameraLookAt.y, cameraLookAt.z}, {0, 1, 0}, false);
+    C3D_FVec pos;
+    C3D_FVec lookat;
+    C3D_FVec up;
+    pos.x = currCameraPos.x;
+    pos.y = currCameraPos.y;
+    pos.z = currCameraPos.z;
+    lookat.x = cameraLookAt.x;
+    lookat.y = cameraLookAt.y;
+    lookat.z = cameraLookAt.z;
+    up.x = 0;
+    up.y = 1;
+    up.z = 0;
+    Mtx_LookAt(Graphics::GetModelViewMtx(), pos, lookat, up, false);
     oldCameraRearView = cameraRearView;
 }
 
@@ -108,7 +119,7 @@ void Kart::UpdateViewPort(int w, int h)
 
     C3D_Mtx* p = Graphics::GetProjectionMtx();
     Mtx_Identity(p);
-    Mtx_PerspStereoTilt(p, cameraFov, ratio, 20, 10000, 0.f, 2.f, false);
+    Mtx_PerspStereoTilt(p, Angle::FromDegrees(cameraFov).AsRadians(), ratio, 20, 10000, 0.f, 2.f, false);
     Graphics::UpdateProjectionMtx();
 }
 
