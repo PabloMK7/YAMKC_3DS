@@ -29,7 +29,7 @@ Lamp::~Lamp()
 
 void Lamp::setDayMode(bool isDay)
 {
-    float scale;
+    /*float scale;
     if (!dayMode && isDay)
         scale = 1.f / 0.55f;
     else if (dayMode && !isDay)
@@ -37,7 +37,7 @@ void Lamp::setDayMode(bool isDay)
     else
         scale = 1.f;
 
-    /*lampObject->GetMaterial("mat_lamp_body").GetColor(Obj::Material::ColorType::AMBIENT).Scale(scale, false);
+    lampObject->GetMaterial("mat_lamp_body").GetColor(Obj::Material::ColorType::AMBIENT).Scale(scale, false);
     lampObject->GetMaterial("mat_lamp_cast").SetVisible(!isDay);*/
 
     dayMode = isDay;

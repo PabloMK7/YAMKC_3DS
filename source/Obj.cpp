@@ -233,18 +233,18 @@ Vector3& Obj::GetScale()
     return scale;
 }
 
-std::vector<Obj::Material>& Obj::Materials() {
+std::vector<Material>& Obj::Materials() {
     return materials;
 }
 
-Obj::Material& Obj::GetMaterial(std::string name)
+Material& Obj::GetMaterial(std::string name)
 {
     for (unsigned int i = 0; i < materials.size(); i++)
     {
         if (materials[i].GetName() == name)
             return materials[i];
     }
-    materials.push_back(Material(this, name));
+    materials.push_back(Material(name));
     return materials.back();
 }
 
@@ -333,79 +333,4 @@ void Obj::ConvertToVBO(void)
 {
     for (auto it = materials.begin(); it != materials.end(); it++)
         (*it).ConvertToVBO();
-}
-
-Obj::Material::Material(Obj* parent, std::string name)
-{
-    this->parent = parent;
-    this->name = name;
-    isVisible = true;
-    vArray = nullptr;
-}
-
-Obj::Material::~Material()
-{
-    if (texture)
-        delete texture;
-    if (vArray)
-        Graphics::VertexArray::Dispose(vArray);
-}
-
-std::string& Obj::Material::GetName()
-{
-    return name;
-}
-
-void Obj::Material::AddFace(const Obj::Face& face)
-{
-    faces.push_back(face);
-}
-
-void Obj::Material::SetTexture(const std::string& fileName)
-{
-    if (texture)
-        delete texture;
-    texture = new Texture(fileName);
-}
-
-void Obj::Material::SetVisible(bool visible)
-{
-    isVisible = visible;
-}
-
-void Obj::Material::Draw()
-{
-    if (!isVisible)
-        return;
-    
-    if (texture)
-    { // Modulate the vertex color with the texture
-        C3D_TexEnv* env = C3D_GetTexEnv(0);
-        C3D_TexEnvInit(env);
-        C3D_TexEnvSrc(env, C3D_Both, GPU_PRIMARY_COLOR, GPU_TEXTURE0, GPU_CONSTANT); // Last arg is unused
-        C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
-
-        texture->Bind();
-    }
-    else
-    { // Only use the vertex color
-        C3D_TexEnv* env = C3D_GetTexEnv(0);
-        C3D_TexEnvInit(env);
-        C3D_TexEnvSrc(env, C3D_Both, GPU_PRIMARY_COLOR, GPU_CONSTANT, GPU_CONSTANT); // Last 2 args is unused
-        C3D_TexEnvFunc(env, C3D_Both, GPU_REPLACE);
-    }
-
-    vArray->Draw(GPU_TRIANGLES);
-}
-
-void Obj::Material::ConvertToVBO(void)
-{
-    vArray = Graphics::VertexArray::Create();
-    for (auto it = faces.cbegin(); it != faces.cend(); it++) {
-        vArray->AddVertex(std::get<0>(*it));
-        vArray->AddVertex(std::get<1>(*it));
-        vArray->AddVertex(std::get<2>(*it));
-    }
-    vArray->Complete();
-    faces.clear();
 }

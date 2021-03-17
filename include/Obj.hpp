@@ -5,37 +5,11 @@
 #include "Color.hpp"
 #include "Texture.hpp"
 #include "Graphics.hpp"
-#include <tuple>
+#include "Material.hpp"
 
 class Obj
 {
 public:
-	using Face = std::tuple<Graphics::GPUVertex, Graphics::GPUVertex, Graphics::GPUVertex>;
-	class Material
-	{
-	public:
-		
-		Material(Obj* parent, std::string name);
-		~Material();
-		std::string& GetName();
-		void AddFace(const Face& face);
-		void SetTexture(const std::string& fileName);
-		void SetVisible(bool visible);
-		void Draw();
-
-		inline void SetTextureWrapMode(GPU_TEXTURE_WRAP_PARAM sWrap, GPU_TEXTURE_WRAP_PARAM tWrap) {texture->Wrap(sWrap, tWrap);}
-
-	friend class Obj;
-	private:
-		Texture* texture = nullptr;
-		Obj* parent;
-		std::string name;
-		std::vector<Obj::Face> faces;
-		bool isVisible;
-		Graphics::VertexArray* vArray;
-
-		void ConvertToVBO(void);
-	};
 
 	Obj(std::string filename);
 	~Obj();
@@ -45,7 +19,7 @@ public:
 	Angle3& GetRotation();
 	Angle3& GetPreRotation();
 	Vector3& GetScale();
-	std::vector<Obj::Material>& Materials();
+	std::vector<Material>& Materials();
 	Material& GetMaterial(std::string name);
 
 private:

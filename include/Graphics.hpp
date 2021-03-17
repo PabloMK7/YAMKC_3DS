@@ -1,3 +1,4 @@
+#pragma once
 #include "3ds.h"
 #include "citro3d.h"
 #include "vector"
@@ -25,6 +26,8 @@ public:
         } color; // Shader input v3
     };
     
+    using GPUFace = std::tuple<Graphics::GPUVertex, Graphics::GPUVertex, Graphics::GPUVertex>;
+
     static void SceneInit(void);
 
     class VertexArray

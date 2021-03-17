@@ -7,7 +7,7 @@ static bool loadTextureFromFile(const char* fileName, C3D_Tex* texture)
 {
 	FILE* file = fopen(fileName, "rb");
 	if(!file) return false;
-	Tex3DS_Texture te3 = Tex3DS_TextureImportStdio(file, texture, NULL, false);
+	Tex3DS_Texture te3 = Tex3DS_TextureImportStdio(file, texture, NULL, true);
 	if(!te3) return false;
 	Tex3DS_TextureFree(te3);
 	C3D_TexSetFilter(texture, GPU_LINEAR, GPU_NEAREST);
