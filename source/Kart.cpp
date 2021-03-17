@@ -25,6 +25,8 @@ const float Kart::cameraFov = 55.f;
 const float Kart::cameraRearViewMultiplyFactor = -1.25f;
 const float Kart::cameraRotationCerpFactor = 0.025f;
 const float Kart::cameraPositionCerpFactor = 0.3f;
+const float Kart::cameraInterOcularDistanceMultiplier = 2.3f;
+const float Kart::cameraFocalLength = 19.f;
 
 const float Kart::engineAccelerationFactor = 2500.f;
 const float Kart::backwardsAccelerationRatioFactor = -0.35f;
@@ -85,18 +87,7 @@ Kart::~Kart()
 
 void Kart::UpdateCamera()
 {
-    static float oldCameraRearView = cameraRearView;
-    static Angle3 oldRotation = GetRotation();
     
-    bool shouldCerp = (oldCameraRearView == cameraRearView);
-
-    Vector3 realCameraOffset = cameraOffset;
-    realCameraOffset.z *= cameraRearView;
-    Vector3 cameraPos = (GetPosition() + realCameraOffset);
-    oldRotation.Cerp(GetRotation(), shouldCerp ? cameraRotationCerpFactor : 1.f);
-    cameraPos.Rotate(oldRotation, GetPosition());
-    currCameraPos.Cerp(cameraPos, shouldCerp ? cameraPositionCerpFactor : 1.f);
-    Vector3 cameraLookAt = GetPosition() + cameraLookAtOffset;
     C3D_FVec pos;
     C3D_FVec lookat;
     C3D_FVec up;
@@ -113,13 +104,28 @@ void Kart::UpdateCamera()
     oldCameraRearView = cameraRearView;
 }
 
-void Kart::UpdateViewPort(int w, int h)
+void Kart::CalcCamera()
+{
+    static Angle3 oldRotation = GetRotation();
+    
+    bool shouldCerp = (oldCameraRearView == cameraRearView);
+
+    Vector3 realCameraOffset = cameraOffset;
+    realCameraOffset.z *= cameraRearView;
+    Vector3 cameraPos = (GetPosition() + realCameraOffset);
+    oldRotation.Cerp(GetRotation(), shouldCerp ? cameraRotationCerpFactor : 1.f);
+    cameraPos.Rotate(oldRotation, GetPosition());
+    currCameraPos.Cerp(cameraPos, shouldCerp ? cameraPositionCerpFactor : 1.f);
+    cameraLookAt = GetPosition() + cameraLookAtOffset;
+}
+
+void Kart::UpdateViewPort(int w, int h, float iod)
 {
     float ratio = (float)w / h;
 
     C3D_Mtx* p = Graphics::GetProjectionMtx();
     Mtx_Identity(p);
-    Mtx_PerspStereoTilt(p, Angle::FromDegrees(cameraFov).AsRadians(), ratio, 20, 10000, 0.f, 2.f, false);
+    Mtx_PerspStereoTilt(p, Angle::DegreesToRadians(cameraFov), ratio, 20, 10000, iod * cameraInterOcularDistanceMultiplier, cameraFocalLength, false);
     Graphics::UpdateProjectionMtx();
 }
 
@@ -291,6 +297,7 @@ void Kart::Calc(int elapsedMsec)
     else
         cameraRearView = 1.f;
 
+    CalcCamera();
     prevPressedKeys = pressedKeys;
 }
 

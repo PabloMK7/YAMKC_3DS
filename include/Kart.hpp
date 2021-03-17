@@ -10,7 +10,7 @@ public:
 	~Kart();
 
 	void UpdateCamera();
-	void UpdateViewPort(int w, int h);
+	void UpdateViewPort(int w, int h, float iod);
 	void Draw();
 	void Calc(int elapsedMsec);
 	void KeyPress(int key);
@@ -39,6 +39,7 @@ private:
 	Angle3 rotation;
 	Vector3 scale = Vector3(1.f, 1.f, 1.f);
 	Vector3 currCameraPos;
+	Vector3 cameraLookAt;
 
 	float advancedAmount;
 
@@ -55,6 +56,8 @@ private:
 	static const float cameraRearViewMultiplyFactor;
 	static const float cameraRotationCerpFactor;
 	static const float cameraPositionCerpFactor;
+	static const float cameraInterOcularDistanceMultiplier;
+	static const float cameraFocalLength;
 
 	static const float engineAccelerationFactor;
 	static const float backwardsAccelerationRatioFactor;
@@ -83,7 +86,9 @@ private:
 	Angle toTireAngles[2] = { Angle::Zero(), Angle::Zero() };
 
 	float cameraRearView = 1.f;
+	float oldCameraRearView = 1.f;
 
+	void CalcCamera();
 	unsigned int KeysJustPressed();
 	Vector3 CalcCollision(const Vector3& advancePos);
 };

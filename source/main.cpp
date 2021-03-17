@@ -20,10 +20,11 @@ int windowW = 400;
 int windowH = 240;
 
 C3D_RenderTarget* targetLeft;
+C3D_RenderTarget* targetRight;
 #define DISPLAY_TRANSFER_FLAGS \
 	(GX_TRANSFER_FLIP_VERT(0) | GX_TRANSFER_OUT_TILED(0) | GX_TRANSFER_RAW_COPY(0) | \
 	GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGBA8) | GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB8) | \
-	GX_TRANSFER_SCALING(GX_TRANSFER_SCALE_XY))
+	GX_TRANSFER_SCALING(GX_TRANSFER_SCALE_X))
 
 Obj* courseModel = nullptr;
 Obj* skyboxModels[2] = { nullptr, nullptr };
@@ -112,9 +113,9 @@ void setLightFogMode(bool isDay) {
 }
 
 // Dibujado de los objetos.
-void sceneRender()
+void sceneRender(float iod)
 {
-    playerKart->UpdateViewPort(windowW, windowH);
+    playerKart->UpdateViewPort(windowW, windowH, iod);
 
     playerKart->UpdateCamera();
 
@@ -187,10 +188,9 @@ void resourceInit() {
     speedMeter = new Speedometer();
 
     playerKart->GetScale() = Vector3(1.2f, 1.2f, 1.2f);
-    /*playerKart->GetDriverObj()->GetMaterial("mat_driver_body").SetTextureRepeatMode(Obj::Material::TextureDirection::DIR_S, GL_MIRRORED_REPEAT);
-    playerKart->GetDriverObj()->GetMaterial("mat_driver_body").SetTextureRepeatMode(Obj::Material::TextureDirection::DIR_T, GL_MIRRORED_REPEAT);
-    playerKart->GetDriverObj()->GetMaterial("mat_driver_eyes").SetTextureRepeatMode(Obj::Material::TextureDirection::DIR_S, GL_MIRRORED_REPEAT);
-    skyboxModels[1]->GetMaterial("mat_moon").ForceDisableFog(true);*/
+    playerKart->GetDriverObj()->GetMaterial("mat_driver_body").SetTextureWrapMode(GPU_MIRRORED_REPEAT, GPU_MIRRORED_REPEAT);
+    playerKart->GetDriverObj()->GetMaterial("mat_driver_eyes").SetTextureWrapMode(GPU_MIRRORED_REPEAT, GPU_REPEAT);
+    //skyboxModels[1]->GetMaterial("mat_moon").ForceDisableFog(true);
 
     setLightFogMode(isDayMode);
 }
@@ -212,12 +212,15 @@ void exit() {
 int main(int argc, char** argv)
 {
     gfxInitDefault();
+    gfxSet3D(true);
     romfsInit();
     C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
     consoleInit(GFX_BOTTOM, NULL);
     
-    targetLeft = C3D_RenderTargetCreate(240 * 2, 400 * 2, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8); // Twice the size needed for anti-aliasing
+    targetLeft = C3D_RenderTargetCreate(240 * 2, 400, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8); // Twice the size needed for anti-aliasing
+    targetRight = C3D_RenderTargetCreate(240 * 2, 400, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8);
     C3D_RenderTargetSetOutput(targetLeft,  GFX_TOP, GFX_LEFT,  DISPLAY_TRANSFER_FLAGS);
+    C3D_RenderTargetSetOutput(targetRight, GFX_TOP, GFX_RIGHT, DISPLAY_TRANSFER_FLAGS);
 
     Graphics::SceneInit();
 
@@ -225,14 +228,22 @@ int main(int argc, char** argv)
     previousTime = 0;
     while (aptMainLoop())
     {
+		float iod = osGet3DSliderState();
+
         hidScanInput();
         playerKart->KeyPress(hidKeysDown());
         playerKart->KeyRelease(hidKeysUp());
         sceneCalc();
         C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
-        C3D_RenderTargetClear(targetLeft, C3D_CLEAR_ALL, 0, 0);
+        C3D_RenderTargetClear(targetLeft, C3D_CLEAR_DEPTH, 0, 0);
         C3D_FrameDrawOn(targetLeft);
-        sceneRender();
+        sceneRender(-iod);
+        if (iod > 0.0f)
+        {
+            C3D_RenderTargetClear(targetRight, C3D_CLEAR_DEPTH, 0, 0);
+            C3D_FrameDrawOn(targetRight);
+            sceneRender(iod);
+        }
         C3D_FrameEnd(0);
     }
 

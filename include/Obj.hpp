@@ -23,6 +23,8 @@ public:
 		void SetVisible(bool visible);
 		void Draw();
 
+		inline void SetTextureWrapMode(GPU_TEXTURE_WRAP_PARAM sWrap, GPU_TEXTURE_WRAP_PARAM tWrap) {texture->Wrap(sWrap, tWrap);}
+
 	friend class Obj;
 	private:
 		Texture* texture = nullptr;
