@@ -66,8 +66,7 @@ Kart::Kart(std::string kartName, std::string wheelName, std::string driverName, 
     }
     shadowObj = new Obj(shadowName);
     shadowObj->GetPosition() += Vector3(0.f, 0.15f, -0.5f);
-    //shadowObj->GetMaterial("mat_shadow").SetRenderMode(Obj::Material::RenderMode::MULTIPLICATIVE);
-
+    shadowObj->GetMaterial("mat_shadow").SetBlendMode(Material::BlendModeBlendedTransparency, nullptr).SetCostantColor(0, Color(0.f, 0.f, 0.f, 0.5f));
 
     fromTireAngles[0] = wheelObjs[0]->GetRotation().y;
     fromTireAngles[1] = wheelObjs[1]->GetRotation().y;

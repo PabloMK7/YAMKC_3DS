@@ -31,13 +31,25 @@ public:
         this->a = a;
     }
 
-    // No se ha usado esto al final, lo dejo en el código igualmente por si es necesario en el futuro
-    // Gracias a este método, se pueden copiar colores en formato hexadecimal directamente de otras aplicaciones
+    // No se ha usado esto al final, lo dejo en el cï¿½digo igualmente por si es necesario en el futuro
+    // Gracias a este mï¿½todo, se pueden copiar colores en formato hexadecimal directamente de otras aplicaciones
     Color(unsigned int rgba) {
         this->r = ((rgba & 0xFF000000) >> 24) / 255.f;
         this->g = ((rgba & 0xFF0000) >> 16) / 255.f;
         this->b = ((rgba & 0xFF00) >> 8) / 255.f;
         this->a = (rgba & 0xFF) / 255.f;
+    }
+
+    unsigned int AsRGBA() const
+    {
+        unsigned char ri = r * 255.f, gi = g * 255.f, bi = b * 255.f, ai = a * 255.f;
+        return (ri << 24) | (gi << 16) | (bi << 8) | ai;
+    }
+
+    unsigned int AsABGR() const
+    {
+        unsigned char ri = r * 255.f, gi = g * 255.f, bi = b * 255.f, ai = a * 255.f;
+        return (ai << 24) | (bi << 16) | (gi << 8) | ri;
     }
 
     void operator=(const Color& right)

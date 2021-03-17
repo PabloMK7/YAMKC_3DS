@@ -7,9 +7,9 @@ Lamp::Lamp(Vector3& pos, Angle3& rot, Vector3& scal) //GLenum light)
     scale = scal;
 
     lampObject = new Obj("romfs:/lamp/lamp_model.obj");
-    /*lampObject->GetMaterial("mat_lamp_cast").SetRenderMode(Obj::Material::RenderMode::ADDITIVE);
+    /*lampObject->GetMaterial("mat_lamp_cast").SetRenderMode(Obj::Material::RenderMode::ADDITIVE);*/
     lampObject->GetMaterial("mat_lamp_cast").SetVisible(false);
-    lampObject->GetMaterial("mat_lamp_cast").ForceDisableFog(true);*/
+    /*lampObject->GetMaterial("mat_lamp_cast").ForceDisableFog(true);*/
 
     /*lampLight = new Light(light);
     lampLight->SetType(Light::LightType::SPOT);
