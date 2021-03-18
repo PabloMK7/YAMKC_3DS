@@ -8,14 +8,15 @@ class Material
 {
 public:
     
+    Material();
     Material(std::string name);
     ~Material();
     std::string& GetName();
-    void AddFace(const Graphics::GPUFace& face);
-    void SetTexture(const std::string& fileName);
+    Material& AddFace(const Graphics::GPUFace& face);
+    Material& SetTexture(const std::string& fileName);
     Material& SetCostantColor(u32 id, const Color& color);
     const Color& GetConstantColor(u32 id);
-    void SetVisible(bool visible);
+    Material& SetVisible(bool visible);
     void Draw();
 
     inline void SetTextureWrapMode(GPU_TEXTURE_WRAP_PARAM sWrap, GPU_TEXTURE_WRAP_PARAM tWrap) {texture->Wrap(sWrap, tWrap);}
@@ -35,18 +36,19 @@ public:
 
     Material& SetTexCombineMode(TexCombineMode mode, void* data);
 
+    void ConvertToVBO(void);
 friend class Obj;
 private:
-    Texture* texture = nullptr;
+    Texture* texture;
     std::string name;
     std::vector<Graphics::GPUFace> faces;
     bool isVisible;
     Graphics::VertexArray* vArray;
-    BlendMode bMode = nullptr;
+    BlendMode bMode;
     void* blendUsrData;
-    TexCombineMode tMode = nullptr;
+    TexCombineMode tMode;
     void* texCombineUsrData;
     Color constantColors[5];
 
-    void ConvertToVBO(void);
+    
 };

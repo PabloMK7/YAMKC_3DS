@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Vector.hpp"
+#include "Graphics.hpp"
+#include "Material.hpp"
 
 class Plane
 {
@@ -11,14 +13,14 @@ public:
 	Vector3& GetPosition();
 	Angle3& GetRotation();
 	Vector3& GetScale();
+	Material& GetMaterial();
 
 	void Draw();
 
 private:
-	Vector3 vertices[4];
-	Vector2 uvCoords[4];
+	Material mat;
 
 	Vector3 position;
 	Angle3 rotation;
-	Vector3 scale = Vector3(1.f, 1.f, 1.f);
+	Vector3 scale;
 };

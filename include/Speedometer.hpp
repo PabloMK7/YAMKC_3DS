@@ -10,13 +10,11 @@ public:
 
 	void SetNeedleAngle(const Angle& angle);
 
-	void Draw(int w, int h);
+	void Draw(C3D_RenderTarget* target, int w, int h);
 
 private:
 	Plane meterPlane;
 	Plane needlePlane;
-	Texture* meterTex;
-	Texture* needleTex;
 
 	static const float screenCover;
 };

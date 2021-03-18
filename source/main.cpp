@@ -113,7 +113,7 @@ void setLightFogMode(bool isDay) {
 }
 
 // Dibujado de los objetos.
-void sceneRender(float iod)
+void sceneRender(C3D_RenderTarget* target, float iod)
 {
     playerKart->UpdateViewPort(windowW, windowH, iod);
 
@@ -130,7 +130,7 @@ void sceneRender(float iod)
 
     if (playerKart) playerKart->Draw();
 
-    if (hudEnabled) speedMeter->Draw(windowW, windowH);
+    if (hudEnabled) speedMeter->Draw(target, windowW, windowH);
 }
 
 unsigned int previousTime = 0;
@@ -237,12 +237,12 @@ int main(int argc, char** argv)
         C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
         C3D_RenderTargetClear(targetLeft, C3D_CLEAR_DEPTH, 0, 0);
         C3D_FrameDrawOn(targetLeft);
-        sceneRender(-iod);
+        sceneRender(targetLeft, -iod);
         if (iod > 0.0f)
         {
             C3D_RenderTargetClear(targetRight, C3D_CLEAR_DEPTH, 0, 0);
             C3D_FrameDrawOn(targetRight);
-            sceneRender(iod);
+            sceneRender(targetRight, iod);
         }
         C3D_FrameEnd(0);
     }

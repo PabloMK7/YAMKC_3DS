@@ -1,16 +1,18 @@
 #include "Plane.hpp"
 
+static const Graphics::GPUVertex planeVInfo[4] = {
+    {{-0.5f, -0.5f, 0.f}, {0.f, -1.f}, {0.f, 0.f, -1.f}, {1.f, 1.f, 1.f, 1.f}}, // xyz, uv, nxnynz, rgba
+    {{-0.5f, 0.5f, 0.f}, {0.f, 0.f}, {0.f, 0.f, -1.f}, {1.f, 1.f, 1.f, 1.f}},
+    {{0.5f, 0.5f, 0.f}, {1.f, 0.f}, {0.f, 0.f, -1.f}, {1.f, 1.f, 1.f, 1.f}},
+    {{0.5f, -0.5f, 0.f}, {1.f, -1.f}, {0.f, 0.f, -1.f}, {1.f, 1.f, 1.f, 1.f}}
+};
+
 Plane::Plane()
 {
-    vertices[0] = Vector3(-0.5f, -0.5f, 0.f);
-    vertices[1] = Vector3(-0.5f, 0.5f, 0.f);
-    vertices[2] = Vector3(0.5f, 0.5f, 0.f);
-    vertices[3] = Vector3(0.5f, -0.5f, 0.f);
-
-    uvCoords[0] = Vector2(0.f, -1.f);
-    uvCoords[1] = Vector2(0.f, 0.f);
-    uvCoords[2] = Vector2(1.f, 0.f);
-    uvCoords[3] = Vector2(1.f, -1.f);
+    scale = Vector3(1.f, 1.f, 1.f);
+    mat.AddFace(std::make_tuple(planeVInfo[2], planeVInfo[1], planeVInfo[0]));
+    mat.AddFace(std::make_tuple(planeVInfo[3], planeVInfo[2], planeVInfo[0]));
+    mat.ConvertToVBO();
 }
 
 Plane::~Plane() {}
@@ -30,27 +32,22 @@ Vector3& Plane::GetScale()
     return scale;
 }
 
+Material& Plane::GetMaterial()
+{
+    return mat;
+}
+
 void Plane::Draw()
 {
-    /*
-    glPushMatrix();
-    glTranslatef(position.x, position.y, position.z);
-    glRotatef(rotation.x.AsDegrees(), 1.f, 0.f, 0.f);
-    glRotatef(rotation.y.AsDegrees(), 0.f, 1.f, 0.f);
-    glRotatef(rotation.z.AsDegrees(), 0.f, 0.f, 1.f);
-    glScalef(scale.x, scale.y, scale.z);
+    C3D_Mtx* m = Graphics::PushModelViewMtx();
+    Mtx_Translate(m, position.x, position.y, position.z, true);
+    Mtx_RotateX(m, rotation.x.AsRadians(), true);
+    Mtx_RotateY(m, rotation.y.AsRadians(), true);
+    Mtx_RotateZ(m, rotation.z.AsRadians(), true);
+    Mtx_Scale(m, scale.x, scale.y, scale.z);
+    Graphics::UpdateModelViewMtx();
 
-    glBegin(GL_TRIANGLE_FAN);
+    mat.Draw();
 
-    glColor4f(1.f, 1.f, 1.f, 1.f);
-
-    for (int i = 0; i < 4; i++) {
-        glTexCoord2f(uvCoords[i].x, uvCoords[i].y);
-        glVertex3f(vertices[i].x, vertices[i].y, vertices[i].z);
-    }
-
-    glEnd();
-
-    glPopMatrix();
-    */
+    Graphics::PopModelViewMtx();
 }

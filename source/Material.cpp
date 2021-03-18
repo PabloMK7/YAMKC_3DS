@@ -1,11 +1,13 @@
 #include "Material.hpp"
 
+Material::Material() : Material("") {};
 
 Material::Material(std::string name)
 {
     this->name = name;
     isVisible = true;
     vArray = nullptr;
+    texture = nullptr;
     SetBlendMode(BlendModeOpacity, nullptr);
     SetTexCombineMode(TexCombineModeNoTex, nullptr);
     for (u32 i = 0; i < sizeof(constantColors) / sizeof(Color); i++)
@@ -25,12 +27,13 @@ std::string& Material::GetName()
     return name;
 }
 
-void Material::AddFace(const Graphics::GPUFace& face)
+Material& Material::AddFace(const Graphics::GPUFace& face)
 {
     faces.push_back(face);
+    return (*this);
 }
 
-void Material::SetTexture(const std::string& fileName)
+Material& Material::SetTexture(const std::string& fileName)
 {
     if (texture)
         delete texture;
@@ -40,6 +43,7 @@ void Material::SetTexture(const std::string& fileName)
         SetBlendMode(texture->IsTransparent() ? BlendModeTransparency : BlendModeOpacity, nullptr);
         SetTexCombineMode(TexCombineModeDeafult, nullptr);
     }
+    return (*this);
 }
 
 Material& Material::SetCostantColor(u32 id, const Color& color)
@@ -58,9 +62,10 @@ const Color& Material::GetConstantColor(u32 id)
         return defaultColor;
 }
 
-void Material::SetVisible(bool visible)
+Material& Material::SetVisible(bool visible)
 {
     isVisible = visible;
+    return (*this);
 }
 
 void Material::Draw()
