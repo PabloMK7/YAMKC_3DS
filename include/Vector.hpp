@@ -198,14 +198,14 @@ public:
 
     constexpr Vector3(float xVal, float yVal, float zVal) : x(xVal), y(yVal), z(zVal) {}
 
-    void operator=(const Vector3& right)
+    inline void operator=(const Vector3& right)
     {
         this->x = right.x;
         this->y = right.y;
         this->z = right.z;
     }
 
-    Vector3 operator+(const Vector3& right) const
+    inline Vector3 operator+(const Vector3& right) const
     {
         Vector3 ret;
         ret.x = this->x + right.x;
@@ -214,14 +214,14 @@ public:
         return ret;
     }
 
-    void operator+=(const Vector3& right)
+    inline void operator+=(const Vector3& right)
     {
         this->x += right.x;
         this->y += right.y;
         this->z += right.z;
     }
 
-    Vector3 operator-(const Vector3& right) const
+    inline Vector3 operator-(const Vector3& right) const
     {
         Vector3 ret;
         ret.x = this->x - right.x;
@@ -230,14 +230,14 @@ public:
         return ret;
     }
 
-    void operator-=(const Vector3& right)
+    inline void operator-=(const Vector3& right)
     {
         this->x -= right.x;
         this->y -= right.y;
         this->z -= right.z;
     }
 
-    Vector3 operator*(const float& amount) const 
+    inline Vector3 operator*(const float& amount) const 
     {
         Vector3 ret;
         ret.x = this->x * amount;
@@ -246,14 +246,14 @@ public:
         return ret;
     }
 
-    void operator*=(const float& amount)
+    inline void operator*=(const float& amount)
     {
         this->x *= amount;
         this->y *= amount;
         this->z *= amount;
     }
 
-    Vector3 operator/(const float& amount) const 
+    inline Vector3 operator/(const float& amount) const 
     {
         Vector3 ret;
         ret.x = this->x / amount;
@@ -262,18 +262,18 @@ public:
         return ret;
     }
 
-    void operator/=(const float& amount)
+    inline void operator/=(const float& amount)
     {
         this->x /= amount;
         this->y /= amount;
         this->z /= amount;
     }
 
-    float Dot(const Vector3& other) const {
+    inline float Dot(const Vector3& other) const {
         return this->x * other.x + this->y * other.y + this->z * other.z;
     }
 
-    Vector3 Cross(const Vector3& other) {
+    inline Vector3 Cross(const Vector3& other) {
         return Vector3(
             this->y * other.z - this->z * other.y,
             this->z * other.x - this->x * other.z,
@@ -317,19 +317,23 @@ public:
         *this = newPoint + center;
     }
 
-    void Lerp(const Vector3& other, float amount) {
+    inline void Lerp(const Vector3& other, float amount) {
         *this += (other - *this) * amount;
     }
 
-    void Cerp(const Vector3& other, float amount) {
+    inline void Cerp(const Vector3& other, float amount) {
         Lerp(other, 1.f - (amount - 1.f) * (amount - 1.f));
     }
 
-    float Magnitude() const {
+    inline float Magnitude() const {
         return sqrtf(Dot(*this));
     }
 
-    void Normalize() {
+    inline float MagNoSqrt() const {
+        return Dot(*this);
+    }
+
+    inline void Normalize() {
         float mag = Magnitude();
         if (mag != 0.f)
             *this /= mag;
