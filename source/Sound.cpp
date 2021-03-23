@@ -4,12 +4,12 @@
 #include <cwav_file.h>
 
 bool Sound::loadSoundFromFile(const char* fileName, CWAV* sound) {
-    sound = (CWAV*) malloc(sizeof(CWAV));
     cwavFileLoad(sound, fileName, 5);
     return (sound->loadStatus) == CWAV_SUCCESS;
 }
 
 Sound::Sound(const std::string& fileName) {
+    sound = (CWAV*) malloc(sizeof(CWAV));
     isLoaded = loadSoundFromFile(fileName.c_str(), sound);
 }
 
@@ -33,5 +33,9 @@ void Sound::Stop() {
 }
 
 bool Sound::IsPlaying() {
-    return isLoaded && cwavIsPlaying(sound);
+    if(isLoaded) {
+        return cwavIsPlaying(sound);
+    } else {
+        return isLoaded;
+    }
 }

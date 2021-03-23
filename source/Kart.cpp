@@ -1,5 +1,6 @@
 #include "Kart.hpp"
 #include <iostream>
+#include "SoundLibrary.hpp"
 
 const Vector3 Kart::defaultWheelPositions[4] = {
     Vector3(-4.524f, 2.129f, -5.311f), // Front-left
@@ -73,6 +74,11 @@ Kart::Kart(std::string kartName, std::string wheelName, std::string driverName, 
 
     toTireAngles[0] = fromTireAngles[0];
     toTireAngles[1] = fromTireAngles[1];
+
+    // --- Sound --- //
+    idleMotorSound = new Sound(IDLE_MOTOR_SOUND);
+    accelMotorSound = new Sound(ACCELERATION_MOTOR_SOUND);
+    // ------------- //
 }
 
 Kart::~Kart()
@@ -82,6 +88,11 @@ Kart::~Kart()
     for (int i = 0; i < 4; i++)
         delete wheelObjs[i];
     delete shadowObj;
+
+    // --- Sound --- //
+    delete idleMotorSound;
+    delete accelMotorSound;
+    // ------------- //
 }
 
 void Kart::UpdateCamera()
@@ -297,6 +308,9 @@ void Kart::Calc(int elapsedMsec)
         cameraRearView = 1.f;
 
     CalcCamera();
+    // --- Sound --- //
+    UpdateSounds();
+    // ------------- //
     prevPressedKeys = pressedKeys;
 }
 
@@ -405,3 +419,16 @@ Vector3 Kart::CalcCollision(const Vector3& advancePos)
     }
     return GetPosition() + newAdvancePos;
 }
+
+// --- Sound --- //
+void Kart::UpdateSounds() {
+    if(!idleMotorSound->IsPlaying()) {
+        idleMotorSound->Play();
+    }
+    if((pressedKeys & (unsigned int) KEY_A) | (pressedKeys & (unsigned int) KEY_B)) {
+        if(!accelMotorSound->IsPlaying()) {
+            accelMotorSound->Play();
+        }
+    }
+}
+// ------------- //

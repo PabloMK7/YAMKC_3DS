@@ -2,7 +2,7 @@
 #include <string>
 #include "Obj.hpp"
 #include "Collision.hpp"
-
+#include "Sound.hpp"
 class Kart
 {
 public:
@@ -91,4 +91,10 @@ private:
 	void CalcCamera();
 	unsigned int KeysJustPressed();
 	Vector3 CalcCollision(const Vector3& advancePos);
+
+	// --- Sound --- //
+	Sound* idleMotorSound;
+	Sound* accelMotorSound;
+	void UpdateSounds();
+	// ------------- //
 };

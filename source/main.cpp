@@ -214,6 +214,7 @@ int main(int argc, char** argv)
     gfxInitDefault();
     gfxSet3D(true);
     romfsInit();
+    ndspInit();
     C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
     consoleInit(GFX_BOTTOM, NULL);
     
@@ -247,5 +248,7 @@ int main(int argc, char** argv)
         C3D_FrameEnd(0);
     }
 
+    ndspExit();
+    romfsExit();
     return 0;
 }
