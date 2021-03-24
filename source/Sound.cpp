@@ -39,3 +39,8 @@ bool Sound::IsPlaying() {
         return isLoaded;
     }
 }
+
+void Sound::SetVolume(float volume) {
+    if(isLoaded) 
+        sound->volume = volume;
+}

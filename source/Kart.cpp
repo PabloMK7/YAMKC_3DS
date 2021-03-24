@@ -77,7 +77,12 @@ Kart::Kart(std::string kartName, std::string wheelName, std::string driverName, 
 
     // --- Sound --- //
     idleMotorSound = new Sound(IDLE_MOTOR_SOUND);
-    accelMotorSound = new Sound(ACCELERATION_MOTOR_SOUND);
+    workingMotorSound = new Sound(MOVING_MOTOR_SOUND);
+    turningSound = new Sound(SQUEAK_SOUND);
+    workingMotorSound->SetVolume(0.4f);
+    turningSound->SetVolume(0.2f);
+    isTurningLeft = false;
+    isTurningRight = false;
     // ------------- //
 }
 
@@ -91,7 +96,7 @@ Kart::~Kart()
 
     // --- Sound --- //
     delete idleMotorSound;
-    delete accelMotorSound;
+    delete workingMotorSound;
     // ------------- //
 }
 
@@ -422,12 +427,41 @@ Vector3 Kart::CalcCollision(const Vector3& advancePos)
 
 // --- Sound --- //
 void Kart::UpdateSounds() {
-    if(!idleMotorSound->IsPlaying()) {
-        idleMotorSound->Play();
-    }
     if((pressedKeys & (unsigned int) KEY_A) | (pressedKeys & (unsigned int) KEY_B)) {
-        if(!accelMotorSound->IsPlaying()) {
-            accelMotorSound->Play();
+        if(idleMotorSound->IsPlaying()) {
+            idleMotorSound->Stop();
+        }
+        if(!workingMotorSound->IsPlaying()) {
+            workingMotorSound->Play();
+        }
+    } else {
+        if(workingMotorSound->IsPlaying()) {
+            workingMotorSound->Stop();
+        }
+        if(!idleMotorSound->IsPlaying()) {
+            idleMotorSound->Play();
+        }
+    }
+
+    if((pressedKeys & (unsigned int) KEY_LEFT)) {
+        if(!turningSound->IsPlaying() && !isTurningLeft) {
+            turningSound->Play();
+            isTurningLeft = true;
+        }
+    } else {
+        if(isTurningLeft) {
+            isTurningLeft = false;
+        }
+    }
+
+    if((pressedKeys & (unsigned int) KEY_RIGHT)) {
+        if(!turningSound->IsPlaying() && !isTurningRight) {
+            turningSound->Play();
+            isTurningRight = true;
+        }
+    } else {
+        if(isTurningRight) {
+            isTurningRight = false;
         }
     }
 }

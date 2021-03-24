@@ -12,6 +12,7 @@ class Sound {
     bool IsPlaying();
     void Play();
     void Stop();
+    void SetVolume(float volume);
 
     private:
     CWAV* sound;

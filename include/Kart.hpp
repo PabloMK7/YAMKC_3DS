@@ -94,7 +94,10 @@ private:
 
 	// --- Sound --- //
 	Sound* idleMotorSound;
-	Sound* accelMotorSound;
+	Sound* workingMotorSound;
+	Sound* turningSound;
+	bool isTurningLeft;
+	bool isTurningRight;
 	void UpdateSounds();
 	// ------------- //
 };
