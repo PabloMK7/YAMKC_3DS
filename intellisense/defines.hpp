@@ -1,0 +1,1 @@
+#define isinf(x) (x)

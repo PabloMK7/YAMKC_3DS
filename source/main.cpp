@@ -146,7 +146,7 @@ void sceneCalc() {
     unsigned int elapsed = currentTime - previousTime;
     previousTime = currentTime;
 
-    // Llamada a la funci�n calc con el tiempo transcurrido a cada objeto.
+    // Llamada a la función calc con el tiempo transcurrido a cada objeto.
     // De esta forma, cada objeto es responsable de actualizar sus par�metros.
     playerKart->Calc(elapsed);
     speedMeter->SetNeedleAngle(playerKart->GetSpeedometerAngle(elapsed));
@@ -175,7 +175,7 @@ void resourceInit() {
     skyboxModels[1] = new Obj("romfs:/course_model/skybox_model_night.obj");
     currRes = "collision";
     std::cout << currRes << std::endl;
-    collision = new Collision("romfs:/collision/map.png", "romfs:/collision/UIMapPos.bin");
+    collision = new Collision("romfs:/collision/collision.kcl");
     currRes = "kart";
     std::cout << currRes << std::endl;
     playerKart = new Kart("romfs:/driver/kart.obj", "romfs:/driver/wheel.obj", "romfs:/driver/driver.obj", "romfs:/driver/shadow.obj", collision);

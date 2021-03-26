@@ -4,7 +4,7 @@
 
 #define MAX_NR_OF_COLLISIONS 8
 
-enum KCHitSphereClassification {
+enum class KCHitSphereClassification {
 	None = 0,
 	Plane = 1,
 	Edge1 = 2,
@@ -102,6 +102,6 @@ public:
 	 */
 	bool CheckSphere(CollisionResult* result, u32 maxCollisions, const Vector3& position, float radius, float scale);
 
-	inline Vector3 GetNormal(u32 idx) const { return Vector3(_normals[idx], _normals[idx + 1], _normals[idx + 2]);}
-	inline Vector3 GetPosition(u32 idx) const { return Vector3(_positions[idx], _positions[idx + 1], _positions[idx + 2]);}
+	inline Vector3 GetNormal(u32 idx) const { idx *= 0x3; return Vector3(_normals[idx], _normals[idx + 1], _normals[idx + 2]);}
+	inline Vector3 GetPosition(u32 idx) const { idx *= 0x3; return Vector3(_positions[idx], _positions[idx + 1], _positions[idx + 2]);}
 };

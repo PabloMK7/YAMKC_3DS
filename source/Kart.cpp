@@ -256,7 +256,7 @@ void Kart::Calc(int elapsedMsec)
         advanceNow = speed * (elapsedMsec / 1000.f);
         Angle angleWithFwd = forward.GetAngle(advanceNow);
         bool goingBackwards = false;
-        if (!std::isinf(angleWithFwd.AsDegrees()) && abs(angleWithFwd.AsDegrees()) > 90.f)
+        if (!isinf(angleWithFwd.AsDegrees()) && abs(angleWithFwd.AsDegrees()) > 90.f)
         {
             speed.Rotate(Angle3(Angle::Zero(), rotateAngle * -2.f, Angle::Zero()));
             advanceNow = advanceNow * -1.f;
@@ -273,7 +273,7 @@ void Kart::Calc(int elapsedMsec)
         wheelObjs[1]->GetRotation().y = rotateAngle * maxWheelTurnAngle + defaultWheelRotations[1].y;
 
         Angle newAngle = Vector3(0.f, 0.f, -1.f).GetAngle(advanceNow);
-        if (!std::isinf(newAngle.AsRadians()) && abs(advanceNow.GetAngle(forward).AsDegrees()) < 90.f)
+        if (!isinf(newAngle.AsRadians()) && abs(advanceNow.GetAngle(forward).AsDegrees()) < 90.f)
             GetRotation().y = newAngle;
 
         Vector3 newKartPosition = CalcCollision(advanceNow * (goingBackwards ? -1.f : 1.f));
@@ -364,6 +364,10 @@ unsigned int Kart::KeysJustPressed()
 Vector3 Kart::CalcCollision(const Vector3& advancePos)
 {
     Vector3 newAdvancePos = advancePos;
+    u16 col = collision->GetAttributAtPos(GetPosition() + Vector3(0.f,0.2f, 0.f));
+    char tmp[0x10];
+    sprintf(tmp, "0x%04hX", col);
+    std::cout << tmp << std::endl;
 
     for (int i = 0; i < collisionSpherePrecision; i++) {
         Vector3 currentPoint;

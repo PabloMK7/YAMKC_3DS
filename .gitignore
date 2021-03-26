@@ -350,3 +350,6 @@ ASALocalRun/
 /intellisense/.DS_Store
 /romfs/.DS_Store
 /source/.DS_Store
+*.3dsx
+*.elf
+*.smdh

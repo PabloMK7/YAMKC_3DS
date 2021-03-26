@@ -67,7 +67,7 @@ bool KCollisionServer::KCHitArrow(KC_PrismHit& dst, const kcol_prism_data_t* pri
 bool KCollisionServer::KCHitSphere(KC_PrismHit& dst, const kcol_prism_data_t* prism, const Vector3& position, float radius, float thickness)
 {
     Vector3 scratchVec3d = position - GetPosition(prism->posIdx);
-
+    
     Vector3 scratchVec3c = GetNormal(prism->eNrm1Idx);
     float dotNrm1 = scratchVec3c.Dot(scratchVec3d);
     if (dotNrm1 >= radius)
@@ -89,9 +89,9 @@ bool KCollisionServer::KCHitSphere(KC_PrismHit& dst, const kcol_prism_data_t* pr
         return false;
 
     float sqRadius = radius * radius;
-    float distance;
+    float distance = 0.f;
 
-    dst.classification = None;
+    dst.classification = KCHitSphereClassification::None;
 
     float t1 = INFINITY;
     if (dotNrm1 >= dotNrm2 && dotNrm1 >= dotNrm3 && dotNrm1 >= 0.f)
@@ -105,7 +105,7 @@ bool KCollisionServer::KCHitSphere(KC_PrismHit& dst, const kcol_prism_data_t* pr
 
             t1 = scratchVec3c.Dot(scratchVec3d);
             if (dotNrm2 >= t1 * dotNrm1)
-                dst.classification = Vertex1;
+                dst.classification = KCHitSphereClassification::Vertex1;
         }
         else
         {
@@ -115,15 +115,15 @@ bool KCollisionServer::KCHitSphere(KC_PrismHit& dst, const kcol_prism_data_t* pr
 
             t1 = scratchVec3c.Dot(scratchVec3d);
             if (dotNrm3 >= t1 * dotNrm1)
-                dst.classification = Vertex3;
+                dst.classification = KCHitSphereClassification::Vertex3;
         }
 
-        if (dst.classification == None)
+        if (dst.classification == KCHitSphereClassification::None)
         {
             if (dotNrm1 > dotFaceNrm)
                 return false;
 
-            dst.classification = Edge1;
+            dst.classification = KCHitSphereClassification::Edge1;
             distance = sqRadius - dotNrm1 * dotNrm1;
         }
     }
@@ -138,7 +138,7 @@ bool KCollisionServer::KCHitSphere(KC_PrismHit& dst, const kcol_prism_data_t* pr
 
             t1 = scratchVec3c.Dot(scratchVec3d);
             if (dotNrm1 >= t1 * dotNrm2)
-                dst.classification = Vertex1;
+                dst.classification = KCHitSphereClassification::Vertex1;
         }
         else
         {
@@ -148,15 +148,15 @@ bool KCollisionServer::KCHitSphere(KC_PrismHit& dst, const kcol_prism_data_t* pr
 
             t1 = scratchVec3c.Dot(scratchVec3d);
             if (dotNrm3 >= t1 * dotNrm2)
-                dst.classification = Vertex2;
+                dst.classification = KCHitSphereClassification::Vertex2;
         }
 
-        if (dst.classification == None)
+        if (dst.classification == KCHitSphereClassification::None)
         {
             if (dotNrm2 > dotFaceNrm)
                 return false;
 
-            dst.classification = Edge2;
+            dst.classification = KCHitSphereClassification::Edge2;
             distance = sqRadius - dotNrm2 * dotNrm2;
         }
     }
@@ -171,7 +171,7 @@ bool KCollisionServer::KCHitSphere(KC_PrismHit& dst, const kcol_prism_data_t* pr
 
             t1 = scratchVec3c.Dot(scratchVec3d);
             if (dotNrm2 >= t1 * dotNrm3)
-                dst.classification = Vertex2;
+                dst.classification = KCHitSphereClassification::Vertex2;
         }
         else
         {
@@ -181,36 +181,36 @@ bool KCollisionServer::KCHitSphere(KC_PrismHit& dst, const kcol_prism_data_t* pr
 
             t1 = scratchVec3c.Dot(scratchVec3d);
             if (dotNrm1 >= t1 * dotNrm3)
-                dst.classification = Vertex3;
+                dst.classification = KCHitSphereClassification::Vertex3;
         }
 
-        if (dst.classification == None)
+        if (dst.classification == KCHitSphereClassification::None)
         {
             if (dotNrm3 > dotFaceNrm)
                 return false;
 
-            dst.classification = Edge3;
+            dst.classification = KCHitSphereClassification::Edge3;
             distance = sqRadius - dotNrm3 * dotNrm3;
         }
     }
     else 
     {
         // All three of our dot products are <= 0.0. We're on the prism.
-        dst.classification = Plane;
+        dst.classification = KCHitSphereClassification::Plane;
     }
 
     // At this point, everything should be classified.
 
-    if (dst.classification == Vertex1
-        || dst.classification == Vertex2
-        || dst.classification == Vertex3)
+    if (dst.classification == KCHitSphereClassification::Vertex1
+        || dst.classification == KCHitSphereClassification::Vertex2
+        || dst.classification == KCHitSphereClassification::Vertex3)
     {
         float squareDistance = 0;
-        if (dst.classification == Vertex1)
+        if (dst.classification == KCHitSphereClassification::Vertex1)
             squareDistance = CalculateVertexSquareDistance(t1, dotNrm2, dotNrm1, scratchVec3c, scratchVec3d);
-        else if (dst.classification == Vertex2)
+        else if (dst.classification == KCHitSphereClassification::Vertex2)
             squareDistance = CalculateVertexSquareDistance(t1, dotNrm3, dotNrm2, scratchVec3c, scratchVec3d);
-        else if (dst.classification == Vertex3)
+        else if (dst.classification == KCHitSphereClassification::Vertex3)
             squareDistance = CalculateVertexSquareDistance(t1, dotNrm1, dotNrm3, scratchVec3c, scratchVec3d);
 
         if (squareDistance > (dotFaceNrm * dotFaceNrm) || squareDistance >= sqRadius)
@@ -220,19 +220,18 @@ bool KCollisionServer::KCHitSphere(KC_PrismHit& dst, const kcol_prism_data_t* pr
  
         dst.distance = sqrtf(distance) - dotFaceNrm;
     }
-    else if (dst.classification == Edge1
-        || dst.classification == Edge2
-        || dst.classification == Edge3)
+    else if (dst.classification == KCHitSphereClassification::Edge1
+        || dst.classification == KCHitSphereClassification::Edge2
+        || dst.classification == KCHitSphereClassification::Edge3)
     {
         // dst.distance is already set at this point.
         dst.distance = sqrtf(distance) - dotFaceNrm;
     }
-    else if (dst.classification == Plane)
+    else if (dst.classification == KCHitSphereClassification::Plane)
     {
         dst.distance = radius - dotFaceNrm;
     }
 
-    // fx32 maxDist = FX_Mul(_kcl->prismThickness, thickness);
     float maxDist = _kcl->prismThickness * thickness;
     if (dst.distance < 0 || dst.distance > maxDist)
         return false;
@@ -242,6 +241,8 @@ bool KCollisionServer::KCHitSphere(KC_PrismHit& dst, const kcol_prism_data_t* pr
 
 bool KCollisionServer::CheckArrow(CollisionResult* result, u32 maxCollisions, const Vector3& origin, const Vector3& direction, float length)
 {
+    result->length = 0;
+
     if (!_kcl)
         return false;
 
@@ -250,7 +251,6 @@ bool KCollisionServer::CheckArrow(CollisionResult* result, u32 maxCollisions, co
     Vector3 blkOrigin = origin - Vector3(_kcl->areaMinPosx, _kcl->areaMinPosy, _kcl->areaMinPosz);
 
     float arrowLength = length;
-    float bestLen = arrowLength;
 
     if (!IsInsideMinMaxInLocalSpace(blkOrigin) && blkArrowDir.x != 0.f)
     {
@@ -291,7 +291,7 @@ bool KCollisionServer::CheckArrow(CollisionResult* result, u32 maxCollisions, co
     if (!IsInsideMinMaxInLocalSpace(blkOrigin))
         return false;
 
-    int dstPrismCount = 0;
+    u32 dstPrismCount = 0;
 
     while (true)
     {
@@ -407,6 +407,8 @@ bool KCollisionServer::CheckArrow(CollisionResult* result, u32 maxCollisions, co
 
 bool KCollisionServer::CheckSphere(CollisionResult* result, u32 maxCollisions, const Vector3& position, float radius, float scale)
 {
+    result->length = 0;
+    
     if (!_kcl)
         return false;
 
@@ -420,7 +422,7 @@ bool KCollisionServer::CheckSphere(CollisionResult* result, u32 maxCollisions, c
         return false;
 
     // Get the first node from the tree.
-    u32 shift = _kcl->blockWidthShift + 12;
+    u32 shift = _kcl->blockWidthShift;
     u32* octreeRoot = _blockData;
     u32 curNode = *(octreeRoot +
         (((difference.z >> shift) << _kcl->areaXYBlocksShift)
