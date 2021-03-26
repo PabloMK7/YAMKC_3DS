@@ -14,8 +14,8 @@ Sound::Sound(const std::string& fileName) {
 }
 
 Sound::~Sound() {
-    if(isLoaded) 
-        cwavFileFree(sound);
+    cwavFileFree(sound);
+    if (sound) free(sound);
 }
 
 bool Sound::IsLoaded() {
