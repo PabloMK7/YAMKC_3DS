@@ -1,5 +1,6 @@
 #include "Kart.hpp"
 #include <iostream>
+#include "SoundLibrary.hpp"
 
 const Vector3 Kart::defaultWheelPositions[4] = {
     Vector3(-4.524f, 2.129f, -5.311f), // Front-left
@@ -73,6 +74,16 @@ Kart::Kart(std::string kartName, std::string wheelName, std::string driverName, 
 
     toTireAngles[0] = fromTireAngles[0];
     toTireAngles[1] = fromTireAngles[1];
+
+    // --- Sound --- //
+    idleMotorSound = new Sound(IDLE_MOTOR_SOUND);
+    workingMotorSound = new Sound(MOVING_MOTOR_SOUND);
+    turningSound = new Sound(SQUEAK_SOUND);
+    workingMotorSound->SetVolume(0.4f);
+    turningSound->SetVolume(0.2f);
+    isTurningLeft = false;
+    isTurningRight = false;
+    // ------------- //
 }
 
 Kart::~Kart()
@@ -82,6 +93,11 @@ Kart::~Kart()
     for (int i = 0; i < 4; i++)
         delete wheelObjs[i];
     delete shadowObj;
+
+    // --- Sound --- //
+    delete idleMotorSound;
+    delete workingMotorSound;
+    // ------------- //
 }
 
 void Kart::UpdateCamera()
@@ -297,6 +313,9 @@ void Kart::Calc(int elapsedMsec)
         cameraRearView = 1.f;
 
     CalcCamera();
+    // --- Sound --- //
+    UpdateSounds();
+    // ------------- //
     prevPressedKeys = pressedKeys;
 }
 
@@ -409,3 +428,45 @@ Vector3 Kart::CalcCollision(const Vector3& advancePos)
     }
     return GetPosition() + newAdvancePos;
 }
+
+// --- Sound --- //
+void Kart::UpdateSounds() {
+    if((pressedKeys & (unsigned int) KEY_A) | (pressedKeys & (unsigned int) KEY_B)) {
+        if(idleMotorSound->IsPlaying()) {
+            idleMotorSound->Stop();
+        }
+        if(!workingMotorSound->IsPlaying()) {
+            workingMotorSound->Play();
+        }
+    } else {
+        if(workingMotorSound->IsPlaying()) {
+            workingMotorSound->Stop();
+        }
+        if(!idleMotorSound->IsPlaying()) {
+            idleMotorSound->Play();
+        }
+    }
+
+    if((pressedKeys & (unsigned int) KEY_LEFT)) {
+        if(!turningSound->IsPlaying() && !isTurningLeft) {
+            turningSound->Play();
+            isTurningLeft = true;
+        }
+    } else {
+        if(isTurningLeft) {
+            isTurningLeft = false;
+        }
+    }
+
+    if((pressedKeys & (unsigned int) KEY_RIGHT)) {
+        if(!turningSound->IsPlaying() && !isTurningRight) {
+            turningSound->Play();
+            isTurningRight = true;
+        }
+    } else {
+        if(isTurningRight) {
+            isTurningRight = false;
+        }
+    }
+}
+// ------------- //
