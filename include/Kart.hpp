@@ -96,8 +96,10 @@ private:
 	Sound* idleMotorSound;
 	Sound* workingMotorSound;
 	Sound* turningSound;
+	Sound* collisionSound;
 	bool isTurningLeft;
 	bool isTurningRight;
-	void UpdateSounds();
+	void UpdateKartSounds();
+	void TriggerCollisionSound();
 	// ------------- //
 };

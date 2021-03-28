@@ -79,8 +79,10 @@ Kart::Kart(std::string kartName, std::string wheelName, std::string driverName, 
     idleMotorSound = new Sound(IDLE_MOTOR_SOUND);
     workingMotorSound = new Sound(MOVING_MOTOR_SOUND);
     turningSound = new Sound(SQUEAK_SOUND);
+    collisionSound = new Sound(HIT_SOUND);
     workingMotorSound->SetVolume(0.4f);
     turningSound->SetVolume(0.2f);
+    collisionSound->SetVolume(0.8f);
     isTurningLeft = false;
     isTurningRight = false;
     // ------------- //
@@ -314,7 +316,7 @@ void Kart::Calc(int elapsedMsec)
 
     CalcCamera();
     // --- Sound --- //
-    UpdateSounds();
+    UpdateKartSounds();
     // ------------- //
     prevPressedKeys = pressedKeys;
 }
@@ -424,13 +426,19 @@ Vector3 Kart::CalcCollision(const Vector3& advancePos)
             default:
                 break;
             }
+
+            // --- Sound --- //
+            if(w != Collision::WallType::NONE) {
+                TriggerCollisionSound();
+            }
+            // ------------- //
         }
     }
     return GetPosition() + newAdvancePos;
 }
 
 // --- Sound --- //
-void Kart::UpdateSounds() {
+void Kart::UpdateKartSounds() {
     if((pressedKeys & (unsigned int) KEY_A) | (pressedKeys & (unsigned int) KEY_B)) {
         if(idleMotorSound->IsPlaying()) {
             idleMotorSound->Stop();
@@ -469,4 +477,11 @@ void Kart::UpdateSounds() {
         }
     }
 }
+
+void Kart::TriggerCollisionSound() {
+    if(!collisionSound->IsPlaying()) {
+        collisionSound->Play();
+    }
+}
+
 // ------------- //
