@@ -2,6 +2,30 @@
 #include <iostream>
 #include <fstream>
 
+Collision::KCLValueProperties::KCLValueProperties(u16 val) : attr(val) {
+	switch (attr.type)
+	{
+	case 0x0: // Road
+		speedMultiplier = 1.f;
+		isWall = false;
+		break;
+	case 0x5: // Off-road
+		speedMultiplier = 0.5f;
+		isWall = false;
+		break;
+	case 0x6: // Heavy Off-road
+		speedMultiplier = 0.2f;
+		isWall = false;
+		break;
+	case 0x10: // Wall type 1
+		speedMultiplier = 1.f;
+		isWall = true;
+		break;
+	default:
+		break;
+	}
+}
+
 Collision::Collision(const std::string& kclFile)
 {
 	FILE* f = fopen(kclFile.c_str(), "rb");
@@ -20,45 +44,11 @@ Collision::~Collision()
 	if (kclBuff) ::operator delete(kclBuff);
 }
 
-u16 Collision::GetAttributAtPos(const Vector3& pos)
+CollisionResult Collision::GetAttributes(const Vector3& center, float radius, u32 maxCollisions)
 {
-	CollisionResult res; 
-	server->CheckSphere(&res, 1, pos, 1.f, 1.f);
-	if (res.length > 0)
-		return res.prisms[0]->attribute;
-	else
-		return 0xFFFF;
+	CollisionResult ret;
+	server->CheckSphere(&ret, maxCollisions, center, radius, 1.f);
+	return ret;
 }
 
-Color Collision::GetColorAtPixel(unsigned int x, unsigned int z)
-{
-
-	/*RGBQUAD col;
-	FreeImage_GetPixelColor((FIBITMAP*)image, x, imageH - z, &col);
-	return Color(col.rgbRed, col.rgbGreen, col.rgbBlue);*/
-	return Color(0, 0, 0);
-}
-
-Color Collision::GetColorAtPosition(const Vector3& position)
-{
-	return Color(0, 0, 0);
-}
-
-Collision::WallType Collision::GetWallTypeAtPosition(const Vector3& position)
-{
-	Color c = GetColorAtPosition(position);
-	float blue = c.b;
-	if (blue < 0.1f)
-		return WallType::NONE;
-	else if (blue > 0.2 && blue < 0.35)
-		return WallType::SOUTH;
-	else if (blue >= 0.35 && blue < 0.65)
-		return WallType::WEST;
-	else if (blue >= 0.65 && blue < 0.85)
-		return WallType::NORTH;
-	else if (blue >= 0.85)
-		return WallType::EAST;
-	else
-		return WallType::ALL;
-}
 

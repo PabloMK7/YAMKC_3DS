@@ -7,22 +7,37 @@
 class Collision
 {
 public:
-	enum class WallType {
-		NONE,
-		SOUTH,
-		WEST,
-		NORTH,
-		EAST,
-		ALL
+	struct KCLAttr
+	{
+		union {
+			u16 raw;
+			struct
+			{
+				u16 type : 5;
+				u16 basicEffect : 3;
+				u16 shadow : 4;
+				u16 flags : 4;
+			};
+		};
+		
+		KCLAttr(u16 val) : raw(val) { }
 	};
 	Collision(const std::string& kclFile);
 	~Collision();
-	u16 GetAttributAtPos(const Vector3& pos);
+	CollisionResult GetAttributes(const Vector3& center, float radius, u32 maxCollisions);
+	class KCLValueProperties
+	{
+	private:
+		/* data */
+	public:
+		KCLAttr attr;
+		float speedMultiplier = 1.f;
+		bool isWall = false;
 
-	Color GetColorAtPixel(unsigned int x, unsigned int z);
-	Color GetColorAtPosition(const Vector3& position);
-	WallType GetWallTypeAtPosition(const Vector3& position);
-
+		KCLValueProperties(u16 kclAttr);
+		
+	};
+	
 private:
 	KCollisionServer* server = nullptr;
 	kcol_resource_t* kclBuff = nullptr;

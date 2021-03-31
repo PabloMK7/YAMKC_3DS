@@ -88,9 +88,11 @@ private:
 	float cameraRearView = 1.f;
 	float oldCameraRearView = 1.f;
 
+	float collisionSpeedMult = 1.f;
+
 	void CalcCamera();
 	unsigned int KeysJustPressed();
-	Vector3 CalcCollision(const Vector3& advancePos);
+	void CalcCollision();
 
 	// --- Sound --- //
 	Sound* idleMotorSound;

@@ -246,10 +246,8 @@ void Kart::Calc(int elapsedMsec)
         speed = Vector3(0.f, 0.f, 0.f);
     }
 
-    Color currentCol = collision->GetColorAtPosition(GetPosition());
-
     Vector3 engineForce = forward * realAccelFactor;
-    float realWheelResistanceFactor = wheelResistanceFactor + currentCol.r * offroadFactor;
+    float realWheelResistanceFactor = wheelResistanceFactor + (1.f - collisionSpeedMult) * offroadFactor;
     Vector3 tireResistance = speedVector * -(realWheelResistanceFactor + (abs(right.AsDegrees()) / maxWheelTurnAngle) * turnWheelFrictionFactor);
     Vector3 windResistance = speedVector * (-windResistanceFactor * speedVector.Magnitude());
     Vector3 totalAcceleration = (engineForce + tireResistance + windResistance) / realMassFactor;
@@ -294,7 +292,7 @@ void Kart::Calc(int elapsedMsec)
         if (!isinf(newAngle.AsRadians()) && abs(advanceNow.GetAngle(forward).AsDegrees()) < 90.f)
             GetRotation().y = newAngle;
 
-        Vector3 newKartPosition = CalcCollision(advanceNow * (goingBackwards ? -1.f : 1.f));
+        Vector3 newKartPosition = GetPosition() + (advanceNow * (goingBackwards ? -1.f : 1.f));
         wheelSpinAmount = (newKartPosition - GetPosition()).Magnitude() * wheelSpinFactor * (goingBackwards ? -1.f : 1.f);
 
         advancedAmount = (newKartPosition - GetPosition()).Magnitude();
@@ -315,6 +313,7 @@ void Kart::Calc(int elapsedMsec)
         cameraRearView = 1.f;
 
     CalcCamera();
+    CalcCollision();
     // --- Sound --- //
     UpdateKartSounds();
     // ------------- //
@@ -382,59 +381,20 @@ unsigned int Kart::KeysJustPressed()
     return (pressedKeys ^ prevPressedKeys) & pressedKeys;
 }
 
-Vector3 Kart::CalcCollision(const Vector3& advancePos)
+void Kart::CalcCollision()
 {
-    Vector3 newAdvancePos = advancePos;
-    u16 col = collision->GetAttributAtPos(GetPosition() + Vector3(0.f,0.2f, 0.f));
-    char tmp[0x10];
-    sprintf(tmp, "0x%04hX", col);
-    std::cout << tmp << std::endl;
-
-    for (int i = 0; i < collisionSpherePrecision; i++) {
-        Vector3 currentPoint;
-        Angle currAngle = Angle::FromDegrees((float)i / collisionSpherePrecision * 360.f);
-        currentPoint.x = currAngle.Sin() * collisionSphereW;
-        currentPoint.z = currAngle.Cos() * collisionSphereH;
-        currentPoint += GetPosition();
-        currentPoint.Rotate(GetRotation(), GetPosition());
-
-        for (int j = 0; j < 4; j++) {
-            Collision::WallType w = collision->GetWallTypeAtPosition(currentPoint + newAdvancePos);
-            switch (w)
-            {
-            case Collision::WallType::NONE:
-                break;
-            case Collision::WallType::SOUTH:
-                if (newAdvancePos.z < 0.f)
-                    newAdvancePos.z = 0.f;
-                break;
-            case Collision::WallType::WEST:
-                if (newAdvancePos.x > 0.f)
-                    newAdvancePos.x = 0.f;
-                break;
-            case Collision::WallType::NORTH:
-                if (newAdvancePos.z > 0.f)
-                    newAdvancePos.z = 0.f;
-                break;
-            case Collision::WallType::EAST:
-                if (newAdvancePos.x < 0.f)
-                    newAdvancePos.x = 0.f;
-                break;
-            case Collision::WallType::ALL:
-                newAdvancePos = Vector3();
-                break;
-            default:
-                break;
-            }
-
-            // --- Sound --- //
-            if(w != Collision::WallType::NONE) {
-                TriggerCollisionSound();
-            }
-            // ------------- //
+    float slowestGround = 1.f;
+    for (u32 i = 0; i < 4; i++)
+    {
+        Vector3 pos = GetPosition() + defaultWheelPositions[i];
+        CollisionResult col = collision->GetAttributes(pos, 2.2f, 8);
+        for (u32 j = 0; j < col.length; j++) {
+            Collision::KCLValueProperties val(col.prisms[j]->attribute);
+            if (val.speedMultiplier < slowestGround)
+                slowestGround = val.speedMultiplier;
         }
     }
-    return GetPosition() + newAdvancePos;
+    collisionSpeedMult = slowestGround;
 }
 
 // --- Sound --- //
