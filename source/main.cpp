@@ -52,8 +52,9 @@ bool isFogMode = false;
 Color dayGlobalAmbientColor = Color(0.85f, 0.85f, 0.85f);
 Color nightGlobalAmbientColor = Color(0.2f, 0.2f, 0.2f);
 
+/*
 void setLightFogMode(bool isDay) {
-    /*
+    
     static bool prevDayMode = isDayMode;
     float scale;
 
@@ -109,8 +110,9 @@ void setLightFogMode(bool isDay) {
     }
 
     prevDayMode = isDay;
-    */
+    
 }
+*/
 
 // Dibujado de los objetos.
 void sceneRender(C3D_RenderTarget* target, float iod)
@@ -192,7 +194,7 @@ void resourceInit() {
     playerKart->GetDriverObj()->GetMaterial("mat_driver_eyes").SetTextureWrapMode(GPU_MIRRORED_REPEAT, GPU_REPEAT);
     //skyboxModels[1]->GetMaterial("mat_moon").ForceDisableFog(true);
 
-    setLightFogMode(isDayMode);
+    //setLightFogMode(isDayMode);
 }
 
 // Destrucci�n de los objetos.

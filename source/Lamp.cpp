@@ -42,10 +42,10 @@ void Lamp::setDayMode(bool isDay)
 
     dayMode = isDay;
 }
-
+/*
 void Lamp::UpdateLight()
 {
-    /*
+    
     glPushMatrix();
     glTranslatef(position.x, position.y, position.z);
     glRotatef(rotation.x.AsDegrees(), 1.f, 0.f, 0.f);
@@ -56,18 +56,17 @@ void Lamp::UpdateLight()
     lampLight->Update();
 
     glPopMatrix();
-    */
+    
 }
 
 void Lamp::EnableLight(bool enable)
 {
-    /*
     if (enable && !dayMode)
         lampLight->Enable();
     else
         lampLight->Disable();
-    */
 }
+*/
 
 void Lamp::Draw()
 {
