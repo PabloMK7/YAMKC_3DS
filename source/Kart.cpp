@@ -103,8 +103,7 @@ Kart::~Kart()
 }
 
 void Kart::UpdateCamera()
-{
-    
+{  
     C3D_FVec pos;
     C3D_FVec lookat;
     C3D_FVec up;
