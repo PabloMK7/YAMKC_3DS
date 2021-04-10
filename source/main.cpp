@@ -7,6 +7,8 @@
 #include "Light.hpp"
 #include "Lamp.hpp"
 #include "Speedometer.hpp"
+#include "ChronoDisplay.hpp"
+#include "Chronometer.hpp"
 #include <ctime>
 
 // Constantes FPS
@@ -51,6 +53,9 @@ bool isDayMode = true;
 bool isFogMode = false;
 Color dayGlobalAmbientColor = Color(0.85f, 0.85f, 0.85f);
 Color nightGlobalAmbientColor = Color(0.2f, 0.2f, 0.2f);
+
+Chronometer* chronometer = nullptr;
+ChronoDisplay* chronoDisplay = nullptr;
 
 /*
 void setLightFogMode(bool isDay) {
@@ -132,7 +137,10 @@ void sceneRender(C3D_RenderTarget* target, float iod)
 
     if (playerKart) playerKart->Draw();
 
-    if (hudEnabled) speedMeter->Draw(target, windowW, windowH);
+    if (hudEnabled) {
+        speedMeter->Draw(target, windowW, windowH);
+        //chronoDisplay->Draw(target, windowW, windowH);
+    }
 }
 
 unsigned int previousTime = 0;
@@ -152,6 +160,7 @@ void sceneCalc() {
     // De esta forma, cada objeto es responsable de actualizar sus par�metros.
     playerKart->Calc(elapsed);
     speedMeter->SetNeedleAngle(playerKart->GetSpeedometerAngle(elapsed));
+    chronoDisplay->SetElapsedTime(chronometer);
 
     if (frameCount >= FPS / 4) {
         timePassed = 0;
@@ -195,6 +204,9 @@ void resourceInit() {
     //skyboxModels[1]->GetMaterial("mat_moon").ForceDisableFog(true);
 
     //setLightFogMode(isDayMode);
+
+    chronometer = new Chronometer();
+    chronoDisplay = new ChronoDisplay(C2D_Color32f(1.0f, 1.0f, 1.0f, 1.0f));
 }
 
 // Destrucci�n de los objetos.
@@ -208,6 +220,8 @@ void exit() {
     if (playerKart) delete playerKart;
     if (speedMeter) delete speedMeter;
     if (collision) delete collision;
+    if (chronometer) delete chronometer;
+    if (chronoDisplay) delete chronoDisplay;
 }
 
 
@@ -218,6 +232,7 @@ int main(int argc, char** argv)
     romfsInit();
     ndspInit();
     C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
+    C2D_Init(C2D_DEFAULT_MAX_OBJECTS);
     consoleInit(GFX_BOTTOM, NULL);
     
     targetLeft = C3D_RenderTargetCreate(240 * 2, 400, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8); // Twice the size needed for anti-aliasing
@@ -240,11 +255,13 @@ int main(int argc, char** argv)
         C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
         C3D_RenderTargetClear(targetLeft, C3D_CLEAR_DEPTH, 0, 0);
         C3D_FrameDrawOn(targetLeft);
+        C2D_SceneTarget(targetLeft);
         sceneRender(targetLeft, -iod);
         if (iod > 0.0f)
         {
             C3D_RenderTargetClear(targetRight, C3D_CLEAR_DEPTH, 0, 0);
             C3D_FrameDrawOn(targetRight);
+            C2D_SceneTarget(targetRight);
             sceneRender(targetRight, iod);
         }
         C3D_FrameEnd(0);
