@@ -65,37 +65,72 @@ Obj::Obj(std::string filename)
         if (pieces.empty()) continue;
 
         if (pieces[0] == "mtllib") {
+	    if (pieces.size() != 2)
+                continue;
             matLib = SplitFilename(filename).first + kPathSeparator + Trim(pieces[1]);
         }
         else if (pieces[0] == "usemtl") {
+	    if (pieces.size() != 2)
+                continue;
             currMat = Trim(pieces[1]);
         }
         else if (pieces[0] == "v") {
+	    if (pieces.size() != 4)
+                continue;
             objVertices.push_back(Vector3(std::stof(pieces[1]), std::stof(pieces[2]), std::stof(pieces[3])));
         }
         else if (pieces[0] == "vn") {
+	    if (pieces.size() != 4)
+                continue;
             Vector3 normal = Vector3(std::stof(pieces[1]), std::stof(pieces[2]), std::stof(pieces[3]));
             normal.Normalize();
             objNormals.push_back(normal);
         }
         else if (pieces[0] == "vt") {
+	    if (pieces.size() != 3)
+                continue;
             objTexCoords.push_back(Vector2(std::stof(pieces[1]), std::stof(pieces[2])));
         }
         else if (pieces[0] == "f") {
+	    if (pieces.size() != 4)
+                continue;
             int vertex[3], normals[3], texCoords[3];
+	    bool error = false;
             for (int i = 0; i < 3; i++) {
                 vertex[i] = normals[i] = texCoords[i] = -1;
                 auto subParts = Split(pieces[i + 1], '/', false);
+		if (subParts.empty() || subParts[0].empty())
+		{
+		    error = true;
+		    break;
+		}
                 vertex[i] = std::stoi(subParts[0]) - 1;
+		if (vertex[i] < 0)
+		{
+		    error = true;
+		    break;
+		}
                 if ((subParts.size() == 3 || subParts.size() == 2) && !subParts[1].empty())
                 {
                     texCoords[i] = std::stoi(subParts[1]) - 1;
+		    if (texCoords[i] < 0)
+		    {
+		        error = true;
+		        break;
+		    }
                 }
                 if (subParts.size() == 3 && !subParts[2].empty())
                 {
                     normals[i] = std::stoi(subParts[2]) - 1;
+		    if (normals[i] < 0)
+		    {
+		        error = true;
+		        break;
+		    }
                 }                
             }
+	    if (error)
+	        continue;
             Graphics::GPUVertex vInfo[3];
             for (int i = 0; i < 3; i++)
             {
@@ -189,6 +224,8 @@ Material& Obj::GetMaterial(std::string name)
 void Obj::LoadMatlib(std::string filename)
 {
     std::ifstream mtlFile(filename);
+    if (!mtlFile.is_open())
+        return;
     matLib = "";
     std::string line;
     std::string currMat = "Default";
@@ -200,24 +237,34 @@ void Obj::LoadMatlib(std::string filename)
         if (pieces.empty()) continue;
 
         if (pieces[0] == "newmtl") {
+	    if (pieces.size() != 2)
+                continue;
             currMat = Trim(pieces[1]);
         }
         else if (pieces[0] == "Kd") {
+	    if (pieces.size() != 4)
+                continue;
             float r = std::stof(pieces[1]);
             float g = std::stof(pieces[2]);
             float b = std::stof(pieces[3]);          
         }
         else if (pieces[0] == "Ka") {
+	    if (pieces.size() != 4)
+                continue;
             float r = std::stof(pieces[1]);
             float g = std::stof(pieces[2]);
             float b = std::stof(pieces[3]);
         }
         else if (pieces[0] == "Ks") {
+	    if (pieces.size() != 4)
+                continue;
             float r = std::stof(pieces[1]);
             float g = std::stof(pieces[2]);
             float b = std::stof(pieces[3]);
         }
         else if (pieces[0] == "map_Kd") {
+	    if (pieces.size() != 2)
+                continue;
             std::string texFile = SplitFilename(filename).first + kPathSeparator + Trim(pieces[1]);
             GetMaterial(currMat).SetTexture(texFile);
         }
