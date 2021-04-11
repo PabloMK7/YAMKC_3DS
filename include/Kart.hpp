@@ -99,6 +99,7 @@ private:
 	Sound* workingMotorSound;
 	Sound* turningSound;
 	Sound* collisionSound;
+	Sound* grassSound;
 	bool isTurningLeft;
 	bool isTurningRight;
 	void UpdateKartSounds();

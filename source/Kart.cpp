@@ -80,9 +80,11 @@ Kart::Kart(std::string kartName, std::string wheelName, std::string driverName, 
     workingMotorSound = new Sound(MOVING_MOTOR_SOUND);
     turningSound = new Sound(SQUEAK_SOUND);
     collisionSound = new Sound(HIT_SOUND);
+    grassSound = new Sound(GRASS_SHORT);
     workingMotorSound->SetVolume(0.4f);
     turningSound->SetVolume(0.2f);
     collisionSound->SetVolume(0.8f);
+    grassSound->SetVolume(0.9f);
     isTurningLeft = false;
     isTurningRight = false;
     // ------------- //
@@ -434,6 +436,16 @@ void Kart::UpdateKartSounds() {
         if(isTurningRight) {
             isTurningRight = false;
         }
+    }
+
+    if(collisionSpeedMult < 0.7f) {
+        if(speed.Magnitude() > 10.0f) {
+            if(!(grassSound->IsPlaying())) grassSound->Play();
+        } else {
+            grassSound->Stop();
+        }
+    } else {
+        if(grassSound->IsPlaying()) grassSound->Stop();
     }
 }
 

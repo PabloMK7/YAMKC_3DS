@@ -9,3 +9,5 @@
 #define RACE_START_3_HONK_SOUND "romfs:/audio/race/zapsplat_multimedia_game_sound_retro_car_racing_start_beeps_001_34949.bcwav"
 #define COIN_COLLECTED_SOUND "romfs:/audio/collectibles/zapsplat_multimedia_game_sound_coil_collect_digital_arcade_004_64270.bcwav"
 #define STAR_COLLECTED_SOUND "romfs:/audio/collectibles/zapsplat_multimedia_game_sound_twinkle_positive_bright_001_63685.bcwav"
+#define GRASS_SHORT "romfs:/audio/environment/73584__j-zazvurek__body-fall-in-grass-distant.bcwav"
+#define GRASS_LONG "romfs:/audio/environment/399276__mjeno__rain-on-grass-pt.bcwav"
