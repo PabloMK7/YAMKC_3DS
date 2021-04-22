@@ -11,6 +11,7 @@ class Sound {
     bool IsLoaded();
     bool IsPlaying();
     void Play();
+    void StereoPlay();
     void Stop();
     void SetVolume(float volume);
 

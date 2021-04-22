@@ -27,6 +27,11 @@ void Sound::Play() {
         cwavPlay(sound, 0, -1);
 }
 
+void Sound::StereoPlay() {
+    if(isLoaded)
+        cwavPlay(sound, 0, 1);
+}
+
 void Sound::Stop() {
     if(isLoaded)
         cwavStop(sound, 0, -1);
