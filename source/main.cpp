@@ -33,6 +33,7 @@ Obj* skyboxModels[2] = { nullptr, nullptr };
 Kart* playerKart = nullptr;
 Collision* collision = nullptr;
 Speedometer* speedMeter = nullptr;
+Sound* mainTheme = nullptr;
 
 #define LAMP_AMOUNT 4
 Lamp* courseLamps[LAMP_AMOUNT];
@@ -207,6 +208,8 @@ void resourceInit() {
 
     chronometer = new Chronometer();
     chronoDisplay = new ChronoDisplay(C2D_Color32f(1.0f, 1.0f, 1.0f, 1.0f));
+
+    mainTheme = new Sound("romfs:/audio/bgm/main_theme.bcwav");
 }
 
 // Destrucci�n de los objetos.
@@ -243,6 +246,8 @@ int main(int argc, char** argv)
     Graphics::SceneInit();
 
     resourceInit();
+    mainTheme->SetVolume(0.4f);
+    mainTheme->StereoPlay();
     previousTime = 0;
     while (aptMainLoop())
     {
