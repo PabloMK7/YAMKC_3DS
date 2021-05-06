@@ -1,34 +1,44 @@
 #include "Chronometer.hpp"
 #include <string>
 
-void Chronometer::Restart() {
-    timer = svcGetSystemTick();
-}
-
-u64 Chronometer::GetElapsedTimeInMillisenconds() {
-    u64 current = svcGetSystemTick();
-	u64 diff = current - timer;
-	return diff / CPU_TICKS_PER_MSEC;
-}
-
-Chronometer::Chronometer() {
-    Restart();
+Chronometer::Chronometer() : frames(0), isPaused(true) {
+    text.SetPosition(Vector3(10.f, 6.f, 0.f));
+    text.SetColor(Color(1.f, 0.75f, 0.f, 1.f), true);
+    text.SetColor(Color(1.f, 1.f, 0.f, 1.f), false);
+    text.SetScale(Vector2(0.85f, 0.85f));
+    fade.GetPosition() = Vector3(5.f + 64.f, 5.f + 14.f, 0.f);
+    fade.SetFade(0.4f);
+    fade.GetScale() = Vector3(128.f, 27.f, 0.f);
 }
 
 Chronometer::~Chronometer() {
-    delete &timer;
 }
 
-u64 Chronometer::GetElapsedSeconds() {
-    return (GetElapsedTimeInMillisenconds() / 1000) % 60;
+void Chronometer::Restart() {
+    frames = 0;
 }
 
-u64 Chronometer::GetElapsedMinutes() {
-    return (GetElapsedTimeInMillisenconds() / 1000) / 60;
+void Chronometer::Tick() {
+    if (!isPaused) frames++;
+    if (frames > 359999) frames = 359999;
 }
 
-void Chronometer::GetElapsedTimeInStringFormat(char* res) {
-    int min = (int) GetElapsedMinutes();
-    int sec = (int) GetElapsedSeconds();
-    sprintf(res, "%02d:%02d\n", min, sec);
+void Chronometer::Pause() {
+    isPaused = true;
+}
+
+void Chronometer::Play() {
+    isPaused = false;
+}
+
+void Chronometer::Draw() {
+    u32 totSec = frames / 60;
+    int sec = totSec % 60;
+    int min = totSec / 60;
+    int milli = (frames % 60) * (1000.f / 60);
+    char buf[20];
+    sprintf(buf, "%02d:%02d:%03d", min, sec, milli); // Pretty inefficient but whatever
+    text.SetText(buf);
+    fade.Draw();
+    text.Draw();
 }

@@ -2,11 +2,12 @@
 #include "Obj.hpp"
 #include "Light.hpp"
 #include <atomic>
+#include "Collision.hpp"
 
 class Lamp
 {
 public:
-	Lamp(Vector3& pos, Angle3& rot, Vector3& scal); //GLenum light);
+	Lamp(Vector3& pos, Angle3& rot, Vector3& scal, Collision& col); //GLenum light);
 	~Lamp();
 	void setDayMode(bool isDay);
 	void EnableLight(bool enable);

@@ -1,12 +1,13 @@
 #include "Lamp.hpp"
 
-Lamp::Lamp(Vector3& pos, Angle3& rot, Vector3& scal) //GLenum light)
+Lamp::Lamp(Vector3& pos, Angle3& rot, Vector3& scal, Collision& col) //GLenum light)
 {
     position = pos;
     rotation = rot;
     scale = scal;
 
     lampObject = new Obj("romfs:/lamp/lamp_model.obj");
+    col.AddResource("romfs:/lamp/lamp_collision.kcl", pos);
     /*lampObject->GetMaterial("mat_lamp_cast").SetRenderMode(Obj::Material::RenderMode::ADDITIVE);*/
     lampObject->GetMaterial("mat_lamp_cast").SetVisible(false);
     /*lampObject->GetMaterial("mat_lamp_cast").ForceDisableFog(true);*/

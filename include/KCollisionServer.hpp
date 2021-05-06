@@ -2,7 +2,7 @@
 #include "3ds.h"
 #include "Vector.hpp"
 
-#define MAX_NR_OF_COLLISIONS 8
+#define MAX_NR_OF_COLLISIONS 16
 
 enum class KCHitSphereClassification {
 	None = 0,
@@ -64,6 +64,7 @@ class CollisionResult
 {
 public:
 	kcol_prism_data_t* prisms[MAX_NR_OF_COLLISIONS];
+	int serverID[MAX_NR_OF_COLLISIONS];
 	float distances[MAX_NR_OF_COLLISIONS];
 	KCHitSphereClassification classifications[MAX_NR_OF_COLLISIONS];
 	u32 length = 0;
@@ -71,6 +72,17 @@ public:
 	inline void Reset()
 	{
 		length = 0;
+	}
+
+	void Merge(const CollisionResult& other) {
+		u32 i, j;
+		for (i = length, j = 0; i < MAX_NR_OF_COLLISIONS && j < other.length; i++, j++) {
+			prisms[i] = other.prisms[j];
+			serverID[i] = other.serverID[j];
+			distances[i] = other.distances[j];
+			classifications[i] = other.classifications[j];
+		}
+		length = i;
 	}
 };
 
@@ -95,12 +107,12 @@ public:
 	/**
 	 * \brief Shoots an arrow through the mesh and returns all hit results.
 	 */
-	bool CheckArrow(CollisionResult* result, u32 maxCollisions, const Vector3& origin, const Vector3& direction, float length);
+	bool CheckArrow(CollisionResult* result, u32 maxCollisions, const Vector3& origin, const Vector3& direction, float length, int serverID);
 
 	/**
 	 * \brief Checks the mesh against a sphere and returns all hit results.
 	 */
-	bool CheckSphere(CollisionResult* result, u32 maxCollisions, const Vector3& position, float radius, float scale);
+	bool CheckSphere(CollisionResult* result, u32 maxCollisions, const Vector3& position, float radius, float scale, int serverID);
 
 	inline Vector3 GetNormal(u32 idx) const { return Vector3(_normals[idx*3], _normals[idx*3 + 1], _normals[idx*3 + 2]);}
 	inline Vector3 GetPosition(u32 idx) const { return Vector3(_positions[idx*3], _positions[idx*3 + 1], _positions[idx*3 + 2]);}

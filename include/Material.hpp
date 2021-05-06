@@ -17,6 +17,7 @@ public:
     Material& SetCostantColor(u32 id, const Color& color);
     const Color& GetConstantColor(u32 id);
     Material& SetVisible(bool visible);
+    void RunMaterialCallbacks();
     void Draw();
 
     inline void SetTextureWrapMode(GPU_TEXTURE_WRAP_PARAM sWrap, GPU_TEXTURE_WRAP_PARAM tWrap) {texture->Wrap(sWrap, tWrap);}
@@ -33,6 +34,7 @@ public:
 
     static void TexCombineModeDeafult(Material& mat, void* data);
     static void TexCombineModeNoTex(Material& mat, void* data);
+    static void TexCombineModeFont(Material& mat, void* data);
 
     Material& SetTexCombineMode(TexCombineMode mode, void* data);
 

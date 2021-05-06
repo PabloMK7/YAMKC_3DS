@@ -92,7 +92,7 @@ private:
 
 	void CalcCamera();
 	unsigned int KeysJustPressed();
-	void CalcCollision();
+	void CalcCollision(Vector3 newKartPosition, bool goingBackwards);
 
 	// --- Sound --- //
 	Sound* idleMotorSound;

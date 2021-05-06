@@ -1,6 +1,8 @@
 #include "Speedometer.hpp"
 
-const float Speedometer::screenCover = 0.3f;
+const float Speedometer::screenCover = 0.4f;
+const float Speedometer::screenMargin = 5.f; // Pixels
+const Vector3 Speedometer::needleOffset = Vector3(470 - 256, 480 - 256, 0.f); // As if the image was 512x512
 
 static void SpdBlendMode(Material& mat, void* data)
 {
@@ -14,10 +16,10 @@ Speedometer::Speedometer()
 {
     meterPlane.GetMaterial().SetTexture("romfs:/speedometer/meter.t3x").SetBlendMode(SpdBlendMode, nullptr);
     needlePlane.GetMaterial().SetTexture("romfs:/speedometer/needle.t3x").SetBlendMode(SpdBlendMode, nullptr);
-    meterPlane.GetScale() = Vector3(2.f * screenCover, 2.f * screenCover, 2.f * screenCover);
-    needlePlane.GetScale() = Vector3(2.5f * screenCover, 2.5f * screenCover, 2.5f * screenCover);
-    meterPlane.GetPosition() = Vector3(0.f, -(1 - screenCover / 1.f) + 0.05f, 0.f);
-    needlePlane.GetPosition() = Vector3(0.f, -1 + 0.089f, 0.01f);
+    meterPlane.GetScale() = Vector3(240.f * screenCover, 240.f * screenCover, 1.f);
+    needlePlane.GetScale() = Vector3(240.f * screenCover * 1.25f, 240.f * screenCover * 1.25f, 1.f);
+    meterPlane.GetPosition() = Vector3(400.f - (240.f * screenCover) + ((240.f * screenCover) / 2) - screenMargin, 240.f - (240.f * screenCover) + ((240.f * screenCover) / 2) - screenMargin, 0.f);
+    needlePlane.GetPosition() = meterPlane.GetPosition() + needleOffset * (240.f * screenCover / 512.f);
 }
 
 Speedometer::~Speedometer()
@@ -26,27 +28,11 @@ Speedometer::~Speedometer()
 
 void Speedometer::SetNeedleAngle(const Angle& angle)
 {
-    needlePlane.GetRotation().z = angle * -1.f;
+    needlePlane.GetRotation().z = angle;
 }
 
-static const C3D_FVec laPos = {0.f, 1.f, 0.f, 0.f};
-static const C3D_FVec laLookAt = {0.f, 0.f, 0.f, 0.f};
-static const C3D_FVec laUp = {0.f, 0.f, 1.f, 0.f};
-
-void Speedometer::Draw(C3D_RenderTarget* target, int w, int h)
+void Speedometer::Draw()
 {
-    float ratio = (float)w / h;
-    C3D_RenderTargetClear(target, C3D_CLEAR_DEPTH, 0, 0);
-
-    Mtx_LookAt(Graphics::GetModelViewMtx(), laPos, laLookAt, laUp, false);
-
-    C3D_Mtx* p = Graphics::GetProjectionMtx();
-    Mtx_OrthoTilt(p, -ratio, ratio, -1.f, 1.f, -1.f, 1.f, false);
-    Graphics::UpdateProjectionMtx();
-
-    meterPlane.GetPosition().x = (ratio - screenCover / 1.f) - 0.0537f;
     meterPlane.Draw();
-
-    needlePlane.GetPosition().x = ratio - 0.1f;
     needlePlane.Draw();
 }

@@ -68,6 +68,12 @@ Material& Material::SetVisible(bool visible)
     return (*this);
 }
 
+void Material::RunMaterialCallbacks()
+{
+    tMode(*this, texCombineUsrData);
+    bMode(*this, blendUsrData);
+}
+
 void Material::Draw()
 {
     if (!isVisible)
@@ -77,8 +83,7 @@ void Material::Draw()
     { // Modulate the vertex color with the texture
         texture->Bind();
     }
-    tMode(*this, texCombineUsrData);
-    bMode(*this, blendUsrData);
+    RunMaterialCallbacks();
     vArray->Draw(GPU_TRIANGLES);
 }
 
@@ -157,6 +162,19 @@ void Material::TexCombineModeNoTex(Material& mat, void* data)
     C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
     C3D_TexEnvColor(env, mat.GetConstantColor(0).AsABGR());
     
+    for (int i = 1; i < 5; i++)
+        C3D_TexEnvInit(C3D_GetTexEnv(i));
+}
+
+void Material::TexCombineModeFont(Material& mat, void* data) // Fonts only have alpha information
+{
+    C3D_TexEnv *env = C3D_GetTexEnv(0);
+    C3D_TexEnvInit(env);
+    C3D_TexEnvSrc(env, C3D_RGB, GPU_PRIMARY_COLOR, GPU_CONSTANT, GPU_CONSTANT); // RGB = vertex color * costant color (last arg not used)
+    C3D_TexEnvSrc(env, C3D_Alpha, GPU_TEXTURE0, GPU_PRIMARY_COLOR, GPU_CONSTANT); // Alpha = texture alpha * vertex alpha (last arg not used)
+    C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
+    C3D_TexEnvColor(env, mat.GetConstantColor(0).AsABGR());
+
     for (int i = 1; i < 5; i++)
         C3D_TexEnvInit(C3D_GetTexEnv(i));
 }

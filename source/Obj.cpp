@@ -131,31 +131,31 @@ Obj::Obj(std::string filename)
             }
 	    if (error)
 	        continue;
-            Graphics::GPUVertex vInfo[3];
-            for (int i = 0; i < 3; i++)
-            {
-                Vector3 position(0.f, 0.f, 0.f);
-                Vector3 normal(0.f, 1.f, 0.f);
-                Vector2 texCoord(0.f, 0.f);
-                if (vertex[i] != -1)
-                    position = objVertices[vertex[i]];
-                if (normals[i] != -1)
-                    normal = objNormals[normals[i]];
-                if (texCoords[i] != -1)
-                    texCoord = objTexCoords[texCoords[i]];
-                
-                vInfo[i].position.x = position.x;
-                vInfo[i].position.y = position.y;
-                vInfo[i].position.z = position.z;
-                vInfo[i].normal.x = normal.x;
-                vInfo[i].normal.y = normal.y;
-                vInfo[i].normal.z = normal.z;
-                vInfo[i].texcoord.u = texCoord.x;
-                vInfo[i].texcoord.v = texCoord.y;
-                vInfo[i].color = {1.f, 1.f, 1.f, 1.f};
-                
-            }
-            GetMaterial(currMat).AddFace(std::make_tuple(vInfo[0], vInfo[1], vInfo[2]));
+        Graphics::GPUVertex vInfo[3];
+        for (int i = 0; i < 3; i++)
+        {
+            Vector3 position(0.f, 0.f, 0.f);
+            Vector3 normal(0.f, 1.f, 0.f);
+            Vector2 texCoord(0.f, 0.f);
+            if (vertex[i] != -1)
+                position = objVertices[vertex[i]];
+            if (normals[i] != -1)
+                normal = objNormals[normals[i]];
+            if (texCoords[i] != -1)
+                texCoord = objTexCoords[texCoords[i]];
+            
+            vInfo[i].position.x = position.x;
+            vInfo[i].position.y = position.y;
+            vInfo[i].position.z = position.z;
+            vInfo[i].normal.x = normal.x;
+            vInfo[i].normal.y = normal.y;
+            vInfo[i].normal.z = normal.z;
+            vInfo[i].texcoord.u = texCoord.x;
+            vInfo[i].texcoord.v = texCoord.y;
+            vInfo[i].color = {1.f, 1.f, 1.f, 1.f};
+            
+        }
+        GetMaterial(currMat).AddFace(std::make_tuple(vInfo[0], vInfo[1], vInfo[2]));
 
         }
     }
@@ -166,6 +166,10 @@ Obj::Obj(std::string filename)
 
 Obj::~Obj()
 {
+    for (auto it = materials.begin(); it != materials.end(); it++) {
+        delete *it;
+    }
+    materials.clear();
 }
 
 void Obj::Draw()
@@ -182,7 +186,7 @@ void Obj::Draw()
     Graphics::UpdateModelViewMtx();
 
     for (auto it = materials.begin(); it != materials.end(); it++)
-        (*it).Draw();
+        (*it)->Draw();
     Graphics::PopModelViewMtx();
 }
 
@@ -206,7 +210,7 @@ Vector3& Obj::GetScale()
     return scale;
 }
 
-std::vector<Material>& Obj::Materials() {
+std::vector<Material*>& Obj::Materials() {
     return materials;
 }
 
@@ -214,11 +218,11 @@ Material& Obj::GetMaterial(std::string name)
 {
     for (unsigned int i = 0; i < materials.size(); i++)
     {
-        if (materials[i].GetName() == name)
-            return materials[i];
+        if (materials[i]->GetName() == name)
+            return *materials[i];
     }
-    materials.push_back(Material(name));
-    return materials.back();
+    materials.push_back(new Material(name));
+    return *materials.back();
 }
 
 void Obj::LoadMatlib(std::string filename)
@@ -274,5 +278,5 @@ void Obj::LoadMatlib(std::string filename)
 void Obj::ConvertToVBO(void)
 {
     for (auto it = materials.begin(); it != materials.end(); it++)
-        (*it).ConvertToVBO();
+        (*it)->ConvertToVBO();
 }

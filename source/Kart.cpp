@@ -76,11 +76,11 @@ Kart::Kart(std::string kartName, std::string wheelName, std::string driverName, 
     toTireAngles[1] = fromTireAngles[1];
 
     // --- Sound --- //
-    idleMotorSound = new Sound(IDLE_MOTOR_SOUND);
-    workingMotorSound = new Sound(MOVING_MOTOR_SOUND);
-    turningSound = new Sound(SQUEAK_SOUND);
-    collisionSound = new Sound(HIT_SOUND);
-    grassSound = new Sound(GRASS_SHORT);
+    idleMotorSound = new Sound(IDLE_MOTOR_SOUND, 1);
+    workingMotorSound = new Sound(MOVING_MOTOR_SOUND, 1);
+    turningSound = new Sound(SQUEAK_SOUND, 1);
+    collisionSound = new Sound(HIT_SOUND, 3);
+    grassSound = new Sound(GRASS_SHORT, 1);
     workingMotorSound->SetVolume(0.4f);
     turningSound->SetVolume(0.2f);
     collisionSound->SetVolume(0.8f);
@@ -101,6 +101,9 @@ Kart::~Kart()
     // --- Sound --- //
     delete idleMotorSound;
     delete workingMotorSound;
+    delete turningSound;
+    delete collisionSound;
+    delete grassSound;
     // ------------- //
 }
 
@@ -171,6 +174,7 @@ void Kart::Draw()
 void Kart::Calc(int elapsedMsec)
 {
     totalElapsedTime += elapsedMsec;
+    Vector3 newKartPosition;
     
     {
         float currSpeed = speed.Magnitude();
@@ -257,11 +261,13 @@ void Kart::Calc(int elapsedMsec)
 
     Vector3 advanceNow;
     float wheelSpinAmount = 0.f;
+    bool goingBackwards = false;
 
     if (inPlaceDrift) {
         Angle rotateAngle = Angle::FromDegrees((right.AsDegrees() / maxWheelTurnAngle) * inPlaceTurnFactor);
         wheelSpinAmount = maxWheelSpinAmount;
         GetRotation().y += rotateAngle;
+        newKartPosition = GetPosition();
     }
     else {
         Point speedPoint(0.f);
@@ -272,7 +278,6 @@ void Kart::Calc(int elapsedMsec)
         speed.Rotate(Angle3(Angle::Zero(), rotateAngle, Angle::Zero()));
         advanceNow = speed * (elapsedMsec / 1000.f);
         Angle angleWithFwd = forward.GetAngle(advanceNow);
-        bool goingBackwards = false;
         if (!isinf(angleWithFwd.AsDegrees()) && abs(angleWithFwd.AsDegrees()) > 90.f)
         {
             speed.Rotate(Angle3(Angle::Zero(), rotateAngle * -2.f, Angle::Zero()));
@@ -293,13 +298,8 @@ void Kart::Calc(int elapsedMsec)
         if (!isinf(newAngle.AsRadians()) && abs(advanceNow.GetAngle(forward).AsDegrees()) < 90.f)
             GetRotation().y = newAngle;
 
-        Vector3 newKartPosition = GetPosition() + (advanceNow * (goingBackwards ? -1.f : 1.f));
+        newKartPosition = GetPosition() + (advanceNow * (goingBackwards ? -1.f : 1.f));
         wheelSpinAmount = (newKartPosition - GetPosition()).Magnitude() * wheelSpinFactor * (goingBackwards ? -1.f : 1.f);
-
-        advancedAmount = (newKartPosition - GetPosition()).Magnitude();
-        if (abs((newKartPosition - GetPosition()).GetAngle(GetForward()).AsDegrees()) > 90.f || goingBackwards)
-            advancedAmount = 0.f;
-        GetPosition() = newKartPosition;
     }
 
     if (abs(wheelSpinAmount) > maxWheelSpinAmount)
@@ -314,7 +314,7 @@ void Kart::Calc(int elapsedMsec)
         cameraRearView = 1.f;
 
     CalcCamera();
-    CalcCollision();
+    CalcCollision(newKartPosition, goingBackwards);
     // --- Sound --- //
     UpdateKartSounds();
     // ------------- //
@@ -382,19 +382,33 @@ unsigned int Kart::KeysJustPressed()
     return (pressedKeys ^ prevPressedKeys) & pressedKeys;
 }
 
-void Kart::CalcCollision()
+void Kart::CalcCollision(Vector3 newKartPosition, bool goingBackwards)
 {
     float slowestGround = 1.f;
-    for (u32 i = 0; i < 4; i++)
-    {
-        Vector3 pos = GetPosition() + defaultWheelPositions[i];
-        CollisionResult col = collision->GetAttributes(pos, 2.2f, 8);
-        for (u32 j = 0; j < col.length; j++) {
-            Collision::KCLValueProperties val(col.prisms[j]->attribute);
-            if (val.speedMultiplier < slowestGround)
-                slowestGround = val.speedMultiplier;
+    Vector3 advance = newKartPosition - GetPosition();
+
+    CollisionResult col = collision->CheckSphere(newKartPosition + Vector3(0.f, 2.f, 0.f), 9.f);
+    for (u32 j = 0; j < col.length; j++) {
+        Collision::KCLValueProperties val(col.prisms[j]->attribute);
+        if (val.speedMultiplier < slowestGround)
+            slowestGround = val.speedMultiplier;
+        if (val.isWall) {
+            Vector3 wallNormal = collision->GetNormal(col.prisms[j]->fNrmIdx, col.serverID[j]) * -1.f;
+            wallNormal.Normalize();
+            if ((speed).Dot(wallNormal) < 0) continue;
+            float dotVal = wallNormal.Dot(advance);
+            if (dotVal > 0) {
+                advance -= wallNormal * dotVal;
+                speed *= (12.f - dotVal) / 12.f;
+            }
         }
     }
+    
+    newKartPosition = GetPosition() + advance;
+    advancedAmount = (newKartPosition - GetPosition()).Magnitude();
+    if (abs((newKartPosition - GetPosition()).GetAngle(GetForward()).AsRadians()) > Angle::DegreesToRadians(90.f) || goingBackwards)
+        advancedAmount = 0.f;
+    GetPosition() = newKartPosition;
     collisionSpeedMult = slowestGround;
 }
 

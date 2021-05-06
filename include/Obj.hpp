@@ -19,12 +19,12 @@ public:
 	Angle3& GetRotation();
 	Angle3& GetPreRotation();
 	Vector3& GetScale();
-	std::vector<Material>& Materials();
+	std::vector<Material*>& Materials();
 	Material& GetMaterial(std::string name);
 
 private:
 	std::string matLib;
-	std::vector<Material> materials;
+	std::vector<Material*> materials;
 	void LoadMatlib(std::string filename);
 	Vector3 position;
 	Angle3 rotation;

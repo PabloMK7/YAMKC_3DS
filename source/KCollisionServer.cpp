@@ -239,11 +239,11 @@ bool KCollisionServer::KCHitSphere(KC_PrismHit& dst, const kcol_prism_data_t* pr
     return true;
 }
 
-bool KCollisionServer::CheckArrow(CollisionResult* result, u32 maxCollisions, const Vector3& origin, const Vector3& direction, float length)
+bool KCollisionServer::CheckArrow(CollisionResult* result, u32 maxCollisions, const Vector3& origin, const Vector3& direction, float length, int serverID)
 {
     result->length = 0;
 
-    if (!_kcl)
+    if (!_kcl || !maxCollisions)
         return false;
 
     Vector3 arrow = direction * length;
@@ -344,6 +344,7 @@ bool KCollisionServer::CheckArrow(CollisionResult* result, u32 maxCollisions, co
 
             result->prisms[dstPrismCount] = prism;
             result->distances[dstPrismCount] = prismHitScratch.distance;
+            result->serverID[dstPrismCount] = serverID;
             dstPrismCount++;
             result->length = dstPrismCount;
 
@@ -405,11 +406,11 @@ bool KCollisionServer::CheckArrow(CollisionResult* result, u32 maxCollisions, co
     return dstPrismCount > 0;
 }
 
-bool KCollisionServer::CheckSphere(CollisionResult* result, u32 maxCollisions, const Vector3& position, float radius, float scale)
+bool KCollisionServer::CheckSphere(CollisionResult* result, u32 maxCollisions, const Vector3& position, float radius, float scale, int serverID)
 {
     result->length = 0;
     
-    if (!_kcl)
+    if (!_kcl or !maxCollisions)
         return false;
 
     Vector3 dFloat = position - Vector3(_kcl->areaMinPosx, _kcl->areaMinPosy, _kcl->areaMinPosz);
@@ -460,6 +461,7 @@ bool KCollisionServer::CheckSphere(CollisionResult* result, u32 maxCollisions, c
         result->prisms[dstPrismCount] = prism;
         result->distances[dstPrismCount] = hit.distance;
         result->classifications[dstPrismCount] = hit.classification;
+        result->serverID[dstPrismCount] = serverID;
         dstPrismCount++;
         result->length = dstPrismCount;
 

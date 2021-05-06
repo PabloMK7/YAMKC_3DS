@@ -3,6 +3,7 @@
 #include "Color.hpp"
 #include "Vector.hpp"
 #include "KCollisionServer.hpp"
+#include "vector"
 
 class Collision
 {
@@ -22,9 +23,12 @@ public:
 		
 		KCLAttr(u16 val) : raw(val) { }
 	};
-	Collision(const std::string& kclFile);
+
+	Collision();
+	void AddResource(const std::string& file, const Vector3& origin);
 	~Collision();
-	CollisionResult GetAttributes(const Vector3& center, float radius, u32 maxCollisions);
+	CollisionResult CheckSphere(const Vector3& center, float radius);
+	inline Vector3 GetNormal(u32 normalIndex, u32 serverID) {return entities[serverID]->server->GetNormal(normalIndex);}
 	class KCLValueProperties
 	{
 	private:
@@ -39,6 +43,20 @@ public:
 	};
 	
 private:
-	KCollisionServer* server = nullptr;
-	kcol_resource_t* kclBuff = nullptr;
+	class CollisionEntity {
+		public:
+			KCollisionServer* server;
+			kcol_resource_t* kclRes;
+			Vector3 origin;
+			
+			CollisionEntity(void* kclBuffer, Vector3 orig) : origin(orig) {
+				kclRes = (kcol_resource_t*)kclBuffer;
+				server = new KCollisionServer(kclRes);
+			}
+			~CollisionEntity() {
+				delete server;
+				::operator delete(kclRes);
+			}
+	};
+	std::vector<CollisionEntity*> entities;
 };

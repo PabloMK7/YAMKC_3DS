@@ -1,17 +1,17 @@
 #include "Plane.hpp"
 
 static const Graphics::GPUVertex planeVInfo[4] = {
-    {{-0.5f, -0.5f, 0.f}, {0.f, -1.f}, {0.f, 0.f, -1.f}, {1.f, 1.f, 1.f, 1.f}}, // xyz, uv, nxnynz, rgba
-    {{-0.5f, 0.5f, 0.f}, {0.f, 0.f}, {0.f, 0.f, -1.f}, {1.f, 1.f, 1.f, 1.f}},
-    {{0.5f, 0.5f, 0.f}, {1.f, 0.f}, {0.f, 0.f, -1.f}, {1.f, 1.f, 1.f, 1.f}},
-    {{0.5f, -0.5f, 0.f}, {1.f, -1.f}, {0.f, 0.f, -1.f}, {1.f, 1.f, 1.f, 1.f}}
+    {{-0.5f, -0.5f, 0.f}, {0.f, 1.f}, {0.f, 0.f, 1.f}, {1.f, 1.f, 1.f, 1.f}}, // xyz, uv, nxnynz, rgba
+    {{-0.5f, 0.5f, 0.f}, {0.f, 0.f}, {0.f, 0.f, 1.f}, {1.f, 1.f, 1.f, 1.f}},
+    {{0.5f, 0.5f, 0.f}, {1.f, 0.f}, {0.f, 0.f, 1.f}, {1.f, 1.f, 1.f, 1.f}},
+    {{0.5f, -0.5f, 0.f}, {1.f, 1.f}, {0.f, 0.f, 1.f}, {1.f, 1.f, 1.f, 1.f}}
 };
 
 Plane::Plane()
 {
     scale = Vector3(1.f, 1.f, 1.f);
-    mat.AddFace(std::make_tuple(planeVInfo[2], planeVInfo[1], planeVInfo[0]));
-    mat.AddFace(std::make_tuple(planeVInfo[3], planeVInfo[2], planeVInfo[0]));
+    mat.AddFace(std::make_tuple(planeVInfo[0], planeVInfo[1], planeVInfo[2]));
+    mat.AddFace(std::make_tuple(planeVInfo[0], planeVInfo[2], planeVInfo[3]));
     mat.ConvertToVBO();
 }
 

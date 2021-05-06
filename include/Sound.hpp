@@ -6,7 +6,7 @@
 
 class Sound {
     public:
-    Sound(const std::string& fileName);
+    Sound(const std::string& fileName, int simulPlays);
 	~Sound();
     bool IsLoaded();
     bool IsPlaying();
@@ -18,5 +18,4 @@ class Sound {
     private:
     CWAV* sound;
     bool isLoaded;
-    bool loadSoundFromFile(const char* fileName, CWAV* sound);
 };

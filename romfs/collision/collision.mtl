@@ -1,22 +1,22 @@
-newmtl col_grass
+newmtl collision:col_grass
 illum 4
 Kd 0.00 1.00 0.12
 Ka 0.00 0.00 0.00
 Tf 1.00 1.00 1.00
 Ni 1.00
-newmtl col_road
+newmtl collision:col_road
 illum 4
 Kd 0.00 0.00 0.00
 Ka 0.00 0.00 0.00
 Tf 1.00 1.00 1.00
 Ni 1.00
-newmtl col_sand
+newmtl collision:col_sand
 illum 4
 Kd 1.00 0.88 0.00
 Ka 0.00 0.00 0.00
 Tf 1.00 1.00 1.00
 Ni 1.00
-newmtl col_wall
+newmtl collision:col_wall
 illum 4
 Kd 1.00 0.00 0.00
 Ka 0.00 0.00 0.00

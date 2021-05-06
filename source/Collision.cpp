@@ -26,28 +26,35 @@ Collision::KCLValueProperties::KCLValueProperties(u16 val) : attr(val) {
 	}
 }
 
-Collision::Collision(const std::string& kclFile)
+Collision::Collision() {}
+
+void Collision::AddResource(const std::string& kclFile, const Vector3& origin)
 {
 	FILE* f = fopen(kclFile.c_str(), "rb");
 	fseek(f, 0, SEEK_END);
 	u32 fSize = ftell(f);
 	fseek(f, 0, SEEK_SET);
-	kclBuff = (kcol_resource_t*)::operator new(fSize);
-	fread(kclBuff, 1, fSize, f);
+	kcol_resource_t* buf = (kcol_resource_t*)::operator new(fSize);
+	fread(buf, 1, fSize, f);
 	fclose(f);
-	server = new KCollisionServer(kclBuff);
+	entities.push_back(new CollisionEntity(buf, origin));
 }
 
 Collision::~Collision()
 {
-	if (server) delete server;
-	if (kclBuff) ::operator delete(kclBuff);
+	for (u32 i = 0; i < entities.size(); i++)
+		delete entities[i];
+	entities.clear();
 }
 
-CollisionResult Collision::GetAttributes(const Vector3& center, float radius, u32 maxCollisions)
+CollisionResult Collision::CheckSphere(const Vector3& center, float radius)
 {
 	CollisionResult ret;
-	server->CheckSphere(&ret, maxCollisions, center, radius, 1.f);
+	for (u32 i = 0; i < entities.size(); i++) {
+		CollisionResult curr;
+		entities[i]->server->CheckSphere(&curr, MAX_NR_OF_COLLISIONS - ret.length, center - entities[i]->origin, radius, 1.f, i);
+		ret.Merge(curr);
+	}
 	return ret;
 }
 

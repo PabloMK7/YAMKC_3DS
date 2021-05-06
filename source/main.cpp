@@ -7,16 +7,13 @@
 #include "Light.hpp"
 #include "Lamp.hpp"
 #include "Speedometer.hpp"
-#include "ChronoDisplay.hpp"
+#include "Text.hpp"
 #include "Chronometer.hpp"
 #include <ctime>
 
 // Constantes FPS
 #define FPS 60
 #define SPF 1.f / FPS
-
-bool hudEnabled = true;
-bool birdsView = false;
 
 int windowW = 400;
 int windowH = 240;
@@ -33,6 +30,7 @@ Obj* skyboxModels[2] = { nullptr, nullptr };
 Kart* playerKart = nullptr;
 Collision* collision = nullptr;
 Speedometer* speedMeter = nullptr;
+Chronometer* chrono = nullptr;
 Sound* mainTheme = nullptr;
 
 #define LAMP_AMOUNT 4
@@ -56,7 +54,6 @@ Color dayGlobalAmbientColor = Color(0.85f, 0.85f, 0.85f);
 Color nightGlobalAmbientColor = Color(0.2f, 0.2f, 0.2f);
 
 Chronometer* chronometer = nullptr;
-ChronoDisplay* chronoDisplay = nullptr;
 
 /*
 void setLightFogMode(bool isDay) {
@@ -127,8 +124,8 @@ void sceneRender(C3D_RenderTarget* target, float iod)
 
     playerKart->UpdateCamera();
 
-    if (isDayMode && skyboxModels[0] && !birdsView) skyboxModels[0]->Draw();
-    else if (!isDayMode && skyboxModels[1] && !birdsView) skyboxModels[1]->Draw();
+    if (isDayMode && skyboxModels[0]) skyboxModels[0]->Draw();
+    else if (!isDayMode && skyboxModels[1]) skyboxModels[1]->Draw();
 
     if (courseModel) courseModel->Draw();
 
@@ -138,10 +135,10 @@ void sceneRender(C3D_RenderTarget* target, float iod)
 
     if (playerKart) playerKart->Draw();
 
-    if (hudEnabled) {
-        speedMeter->Draw(target, windowW, windowH);
-        //chronoDisplay->Draw(target, windowW, windowH);
-    }
+    Graphics::StartUIDraw(target);
+
+    speedMeter->Draw();
+    chrono->Draw();
 }
 
 unsigned int previousTime = 0;
@@ -161,7 +158,6 @@ void sceneCalc() {
     // De esta forma, cada objeto es responsable de actualizar sus par�metros.
     playerKart->Calc(elapsed);
     speedMeter->SetNeedleAngle(playerKart->GetSpeedometerAngle(elapsed));
-    chronoDisplay->SetElapsedTime(chronometer);
 
     if (frameCount >= FPS / 4) {
         timePassed = 0;
@@ -171,12 +167,15 @@ void sceneCalc() {
         timePassed += elapsed;
         frameCount++;
     }
+    chrono->Tick();
 }
 
 // Inicializaci�n de los objetos. 
 void resourceInit() {
     std::string currRes = "course_model";
     std::cout << currRes << std::endl;
+
+    collision = new Collision();
 
     courseModel = new Obj("romfs:/course_model/course_model.obj");
     currRes = "sky_box_day";
@@ -187,14 +186,14 @@ void resourceInit() {
     skyboxModels[1] = new Obj("romfs:/course_model/skybox_model_night.obj");
     currRes = "collision";
     std::cout << currRes << std::endl;
-    collision = new Collision("romfs:/collision/collision.kcl");
+    collision->AddResource("romfs:/collision/collision.kcl", Vector3(0.f, 0.f, 0.f));
     currRes = "kart";
     std::cout << currRes << std::endl;
     playerKart = new Kart("romfs:/driver/kart.obj", "romfs:/driver/wheel.obj", "romfs:/driver/driver.obj", "romfs:/driver/shadow.obj", collision);
 
     for (int i = 0; i < LAMP_AMOUNT; i++) {
         Vector3 scale = Vector3(1.f, 1.f, 1.f);
-        courseLamps[i] = new Lamp(lampPositions[i], lampRotations[i], scale);
+        courseLamps[i] = new Lamp(lampPositions[i], lampRotations[i], scale, *collision);
     }
 
     speedMeter = new Speedometer();
@@ -207,13 +206,14 @@ void resourceInit() {
     //setLightFogMode(isDayMode);
 
     chronometer = new Chronometer();
-    chronoDisplay = new ChronoDisplay(C2D_Color32f(1.0f, 1.0f, 1.0f, 1.0f));
 
-    mainTheme = new Sound("romfs:/audio/bgm/main_theme.bcwav");
+    mainTheme = new Sound("romfs:/audio/bgm/main_theme.bcwav", 1);
+
+    chrono = new Chronometer();
 }
 
 // Destrucci�n de los objetos.
-void exit() {
+void resourceExit() {
     for (int i = 0; i < LAMP_AMOUNT; i++) {
         if (courseLamps[i]) delete courseLamps[i];
     }
@@ -224,9 +224,10 @@ void exit() {
     if (speedMeter) delete speedMeter;
     if (collision) delete collision;
     if (chronometer) delete chronometer;
-    if (chronoDisplay) delete chronoDisplay;
+    if (mainTheme) delete mainTheme;
+    if (chrono) delete chrono;
+    
 }
-
 
 int main(int argc, char** argv)
 {
@@ -244,10 +245,12 @@ int main(int argc, char** argv)
     C3D_RenderTargetSetOutput(targetRight, GFX_TOP, GFX_RIGHT, DISPLAY_TRANSFER_FLAGS);
 
     Graphics::SceneInit();
-
+    Text::Init();
     resourceInit();
+
     mainTheme->SetVolume(0.4f);
     mainTheme->StereoPlay();
+    chrono->Play();
     previousTime = 0;
     while (aptMainLoop())
     {
@@ -270,8 +273,15 @@ int main(int argc, char** argv)
             sceneRender(targetRight, iod);
         }
         C3D_FrameEnd(0);
+        if (hidKeysDown() & KEY_START)
+            break;
     }
 
+    resourceExit();
+    Text::Terminate();
+    Graphics::SceneExit();
+
+    C3D_Fini();
     ndspExit();
     romfsExit();
     return 0;

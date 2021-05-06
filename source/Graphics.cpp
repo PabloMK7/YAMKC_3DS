@@ -34,6 +34,30 @@ void Graphics::SceneInit()
     InitVBO();
 }
 
+void Graphics::SceneExit(void)
+{
+	// Exit the vertex buffer
+	ExitVBO();
+	// Free shader program
+	shaderProgramFree(&program);
+	// Free DVLB
+	DVLB_Free(vshader_dvlb);
+}
+
+static const C3D_FVec laPos = {0.f, 1.f, 0.f, 0.f};
+static const C3D_FVec laLookAt = {0.f, 0.f, 0.f, 0.f};
+static const C3D_FVec laUp = {0.f, 0.f, 1.f, 0.f};
+
+void Graphics::StartUIDraw(C3D_RenderTarget* target)
+{
+    C3D_RenderTargetClear(target, C3D_CLEAR_DEPTH, 0, 0);
+
+   	Mtx_Identity(Graphics::GetModelViewMtx());
+	Mtx_OrthoTilt(Graphics::GetProjectionMtx(), 0.0f, target->screen == GFX_TOP ? 400.0f : 320.f, 240.0f, 0.0f, 1.f, -1.0f, true);
+	
+    Graphics::UpdateProjectionMtx();
+}
+
 void Graphics::InitVBO(void)
 {
     // Configure attributes for use with the vertex shader
@@ -51,6 +75,11 @@ void Graphics::InitVBO(void)
 	C3D_BufInfo* bufInfo = C3D_GetBufInfo();
 	BufInfo_Init(bufInfo);
 	BufInfo_Add(bufInfo, vbo_data, sizeof(GPUVertex), 4, 0x3210); // Last arg is the order of the input attrs in reverse
+}
+
+void Graphics::ExitVBO(void)
+{
+	if (vbo_data) linearFree(vbo_data);
 }
 
 Graphics::VertexArray* Graphics::VertexArray::Create()
@@ -72,6 +101,20 @@ void Graphics::VertexArray::AddVertex(const Graphics::GPUVertex& vertex)
 	if (!lockCreate)
 		return;
 	vbo_data[startIndex + size++] = vertex;
+}
+
+static Graphics::GPUVertex defaultV;
+Graphics::GPUVertex& Graphics::VertexArray::GetVertex(u32 index)
+{
+	if (index < size)
+		return vbo_data[startIndex + index];
+	else
+		return defaultV;
+}
+
+u32 Graphics::VertexArray::Size()
+{
+	return size;
 }
 
 void Graphics::VertexArray::Complete()
