@@ -30,12 +30,8 @@ void Sound::Play() {
 void Sound::StereoPlay() {
     if(isLoaded)
     {
-        sound->monoPan = -1.f;
-        cwavPlay(sound, 0, -1);
-        sound->monoPan = 1.f;
-        cwavPlay(sound, 1, -1);
-    }
-        
+        cwavPlay(sound, 0, 1);
+    }        
 }
 
 void Sound::Stop() {

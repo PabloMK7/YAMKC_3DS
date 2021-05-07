@@ -13,14 +13,15 @@ public:
     ~Material();
     std::string& GetName();
     Material& AddFace(const Graphics::GPUFace& face);
-    Material& SetTexture(const std::string& fileName);
+    Material& SetTexture(const std::string& fileName, bool toVram = true);
     Material& SetCostantColor(u32 id, const Color& color);
     const Color& GetConstantColor(u32 id);
+    Graphics::VertexArray& GetVertexArray();
     Material& SetVisible(bool visible);
     void RunMaterialCallbacks();
     void Draw();
 
-    inline void SetTextureWrapMode(GPU_TEXTURE_WRAP_PARAM sWrap, GPU_TEXTURE_WRAP_PARAM tWrap) {texture->Wrap(sWrap, tWrap);}
+    inline Material& SetTextureWrapMode(GPU_TEXTURE_WRAP_PARAM sWrap, GPU_TEXTURE_WRAP_PARAM tWrap) {texture->Wrap(sWrap, tWrap); return *this;}
 
     using BlendMode = void(*)(Material&, void*);
     using TexCombineMode = void(*)(Material&, void*);

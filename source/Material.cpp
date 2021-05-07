@@ -33,11 +33,11 @@ Material& Material::AddFace(const Graphics::GPUFace& face)
     return (*this);
 }
 
-Material& Material::SetTexture(const std::string& fileName)
+Material& Material::SetTexture(const std::string& fileName, bool toVram)
 {
     if (texture)
         delete texture;
-    texture = new Texture(fileName);
+    texture = new Texture(fileName, toVram);
     if (texture)
     {
         SetBlendMode(texture->IsTransparent() ? BlendModeTransparency : BlendModeOpacity, nullptr);
@@ -60,6 +60,11 @@ const Color& Material::GetConstantColor(u32 id)
         return constantColors[id];
     else
         return defaultColor;
+}
+
+Graphics::VertexArray& Material::GetVertexArray()
+{
+    return *vArray;
 }
 
 Material& Material::SetVisible(bool visible)

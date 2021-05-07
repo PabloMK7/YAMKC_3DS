@@ -20,19 +20,19 @@ static bool textureHasAlpha(GPU_TEXCOLOR color) {
 	}
 }
 
-bool Texture::loadTextureFromFile(const char* fileName, C3D_Tex* texture)
+bool Texture::loadTextureFromFile(const char* fileName, C3D_Tex* texture, bool toVram)
 {
 	FILE* file = fopen(fileName, "rb");
 	if(!file) return false;
-	Tex3DS_Texture te3 = Tex3DS_TextureImportStdio(file, texture, NULL, true);
+	Tex3DS_Texture te3 = Tex3DS_TextureImportStdio(file, texture, NULL, toVram);
 	if(!te3) return false;
 	Tex3DS_TextureFree(te3);
 	return true;
 }
 
-Texture::Texture(const std::string& fileName)
+Texture::Texture(const std::string& fileName, bool toVram)
 {
-	correctyLoaded = loadTextureFromFile(fileName.c_str(), &textureData);
+	correctyLoaded = loadTextureFromFile(fileName.c_str(), &textureData, toVram);
 	isTransparent = textureHasAlpha(textureData.fmt);
 	Wrap(GPU_REPEAT, GPU_REPEAT);
 	C3D_TexSetFilter(&textureData, GPU_LINEAR, GPU_NEAREST);

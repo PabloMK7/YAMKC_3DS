@@ -15,6 +15,7 @@ public:
 	void Calc(int elapsedMsec);
 	void KeyPress(int key);
 	void KeyRelease(int key);
+	void CirclePadState(s16 xVal, s16 yVal);
 
 	Angle GetSpeedometerAngle(int elapsedMsec);
 
@@ -80,6 +81,8 @@ private:
 	int totalElapsedTime = 0;
 	unsigned int pressedKeys;
 	unsigned int prevPressedKeys;
+	float xCirclePad;
+	float yCirclePad;
 
 	int tiresRotateTimer;
 	Angle fromTireAngles[2] = { Angle::Zero(), Angle::Zero() };

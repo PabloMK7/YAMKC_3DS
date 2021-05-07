@@ -9,6 +9,7 @@
 #include "Speedometer.hpp"
 #include "Text.hpp"
 #include "Chronometer.hpp"
+#include "BottomMap.hpp"
 #include <ctime>
 
 // Constantes FPS
@@ -20,6 +21,7 @@ int windowH = 240;
 
 C3D_RenderTarget* targetLeft;
 C3D_RenderTarget* targetRight;
+C3D_RenderTarget* targetBottom;
 #define DISPLAY_TRANSFER_FLAGS \
 	(GX_TRANSFER_FLIP_VERT(0) | GX_TRANSFER_OUT_TILED(0) | GX_TRANSFER_RAW_COPY(0) | \
 	GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGBA8) | GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB8) | \
@@ -32,6 +34,7 @@ Collision* collision = nullptr;
 Speedometer* speedMeter = nullptr;
 Chronometer* chrono = nullptr;
 Sound* mainTheme = nullptr;
+BottomMap* bottomMap = nullptr;
 Fader* mainFade = nullptr;
 
 #define LAMP_AMOUNT 4
@@ -119,7 +122,7 @@ void setLightFogMode(bool isDay) {
 */
 
 // Dibujado de los objetos.
-void sceneRender(C3D_RenderTarget* target, float iod)
+void sceneTopRender(C3D_RenderTarget* target, float iod)
 {
     playerKart->UpdateViewPort(windowW, windowH, iod);
 
@@ -143,6 +146,13 @@ void sceneRender(C3D_RenderTarget* target, float iod)
     mainFade->Draw();
 }
 
+void sceneBottomRender(C3D_RenderTarget* target)
+{
+    Graphics::StartUIDraw(target);
+    bottomMap->Draw(playerKart->GetPosition(), playerKart->GetRotation().y);
+    mainFade->Draw();
+}
+
 unsigned int previousTime = 0;
 unsigned int currentTime = 0;
 
@@ -158,6 +168,11 @@ void sceneCalc() {
 
     // Llamada a la función calc con el tiempo transcurrido a cada objeto.
     // De esta forma, cada objeto es responsable de actualizar sus par�metros.
+    playerKart->KeyPress(hidKeysDown());
+    playerKart->KeyRelease(hidKeysUp());
+    circlePosition pos;
+    hidCircleRead(&pos);
+    playerKart->CirclePadState(pos.dx, pos.dy);
     playerKart->Calc(elapsed);
     speedMeter->SetNeedleAngle(playerKart->GetSpeedometerAngle(elapsed));
 
@@ -213,10 +228,11 @@ void resourceInit() {
     mainTheme = new Sound("romfs:/audio/bgm/main_theme.bcwav", 1);
 
     chrono = new Chronometer();
+    bottomMap = new BottomMap();
 
     mainFade = new Fader();
     mainFade->GetScale() = Vector3(400.f, 240.f, 0.f);
-    mainFade->GetPosition() = Vector3(200.f, 120.f, 0.f);
+    mainFade->GetPosition() = Vector3(200.f, 120.f, 0.95f);
     mainFade->SetTargetFade(1.f, 60);
 }
 
@@ -235,7 +251,7 @@ void resourceExit() {
     if (mainTheme) delete mainTheme;
     if (chrono) delete chrono;
     if (mainFade) delete mainFade;
-    
+    if (bottomMap) delete bottomMap;
 }
 
 int main(int argc, char** argv)
@@ -245,13 +261,15 @@ int main(int argc, char** argv)
     romfsInit();
     ndspInit();
     C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
-    C2D_Init(C2D_DEFAULT_MAX_OBJECTS);
-    consoleInit(GFX_BOTTOM, NULL);
+    //C2D_Init(C2D_DEFAULT_MAX_OBJECTS);
+    //consoleInit(GFX_BOTTOM, NULL);
     
     targetLeft = C3D_RenderTargetCreate(240 * 2, 400, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8); // Twice the size needed for anti-aliasing
     targetRight = C3D_RenderTargetCreate(240 * 2, 400, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8);
+    targetBottom = C3D_RenderTargetCreate(240 * 2, 320, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8);
     C3D_RenderTargetSetOutput(targetLeft,  GFX_TOP, GFX_LEFT,  DISPLAY_TRANSFER_FLAGS);
     C3D_RenderTargetSetOutput(targetRight, GFX_TOP, GFX_RIGHT, DISPLAY_TRANSFER_FLAGS);
+    C3D_RenderTargetSetOutput(targetBottom, GFX_BOTTOM, GFX_LEFT, DISPLAY_TRANSFER_FLAGS);
 
     Graphics::SceneInit();
     Text::Init();
@@ -266,21 +284,20 @@ int main(int argc, char** argv)
 		float iod = osGet3DSliderState();
 
         hidScanInput();
-        playerKart->KeyPress(hidKeysDown());
-        playerKart->KeyRelease(hidKeysUp());
         sceneCalc();
         C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
         C3D_RenderTargetClear(targetLeft, C3D_CLEAR_DEPTH, 0, 0);
         C3D_FrameDrawOn(targetLeft);
-        C2D_SceneTarget(targetLeft);
-        sceneRender(targetLeft, -iod);
+        sceneTopRender(targetLeft, -iod);
         if (iod > 0.0f)
         {
             C3D_RenderTargetClear(targetRight, C3D_CLEAR_DEPTH, 0, 0);
             C3D_FrameDrawOn(targetRight);
-            C2D_SceneTarget(targetRight);
-            sceneRender(targetRight, iod);
+            sceneTopRender(targetRight, iod);
         }
+        C3D_RenderTargetClear(targetBottom, C3D_CLEAR_DEPTH, 0, 0);
+        C3D_FrameDrawOn(targetBottom);
+        sceneBottomRender(targetBottom);
         C3D_FrameEnd(0);
         if (hidKeysDown() & KEY_START)
             break;

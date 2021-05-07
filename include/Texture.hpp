@@ -7,7 +7,7 @@
 class Texture
 {
 public:
-	Texture(const std::string& fileName);
+	Texture(const std::string& fileName, bool toVram = true);
 	~Texture();
 	bool IsLoaded();
 	bool IsTransparent();
@@ -18,5 +18,5 @@ private:
 	C3D_Tex textureData;
 	bool isTransparent;
 	bool correctyLoaded;
-	bool loadTextureFromFile(const char* fileName, C3D_Tex* texture); 
+	bool loadTextureFromFile(const char* fileName, C3D_Tex* texture, bool toVram); 
 };

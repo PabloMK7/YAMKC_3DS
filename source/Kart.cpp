@@ -38,7 +38,7 @@ const float Kart::maxWheelTurnAngle = 19.f;
 const float Kart::turnWheelFrictionFactor = 1.f;
 const float Kart::turnBySpeedFactor = 210.f;
 const float Kart::maxTurnAmount = 0.9f;
-const float Kart::inPlaceTurnFactor = 1.1f;
+const float Kart::inPlaceTurnFactor = 2.75f;
 const float Kart::inPlaceStartMinSpeed = 5.f;
 const float Kart::wheelSpinFactor = 6.f;
 const float Kart::maxWheelSpinAmount = 15.f;
@@ -52,7 +52,6 @@ Kart::Kart(std::string kartName, std::string wheelName, std::string driverName, 
 {
     pressedKeys = 0;
     prevPressedKeys = 0;
-    tiresRotateTimer = -1;
     currCameraPos = cameraOffset;
     speed = Vector3();
     collision = col;
@@ -195,42 +194,19 @@ void Kart::Calc(int elapsedMsec)
         kartObj->GetScale().z = (1.f + realGrowFactor * 0.1f);
     }
 
-    if ((prevPressedKeys & (unsigned int)KEY_LEFT) != (pressedKeys & (unsigned int)KEY_LEFT) || (prevPressedKeys & (unsigned int)KEY_RIGHT) != (pressedKeys & (unsigned int)KEY_RIGHT))
-    {
-        tiresRotateTimer = 0;
-        fromTireAngles[0] = wheelObjs[0]->GetRotation().y;
-        fromTireAngles[1] = wheelObjs[1]->GetRotation().y;
-        if (pressedKeys & (unsigned int)KEY_LEFT) {
-            toTireAngles[0] = defaultWheelRotations[0].y + Angle::FromDegrees(maxWheelTurnAngle);
-            toTireAngles[1] = defaultWheelRotations[1].y + Angle::FromDegrees(maxWheelTurnAngle);
-        }
-        else if (pressedKeys & (unsigned int)KEY_RIGHT) {
-            toTireAngles[0] = defaultWheelRotations[0].y - Angle::FromDegrees(maxWheelTurnAngle);
-            toTireAngles[1] = defaultWheelRotations[1].y - Angle::FromDegrees(maxWheelTurnAngle);
-        }
-        else {
-            toTireAngles[0] = defaultWheelRotations[0].y;
-            toTireAngles[1] = defaultWheelRotations[1].y;
-        }
-    }
+
+    fromTireAngles[0] = wheelObjs[0]->GetRotation().y;
+    fromTireAngles[1] = wheelObjs[1]->GetRotation().y;
+    toTireAngles[0] = defaultWheelRotations[0].y + Angle::FromDegrees(maxWheelTurnAngle) * xCirclePad * -1.f;
+    toTireAngles[1] = defaultWheelRotations[1].y + Angle::FromDegrees(maxWheelTurnAngle) * xCirclePad * -1.f;
 
     Angle left = Angle::Zero();
     Angle right = Angle::Zero();
 
-    if (tiresRotateTimer >= 0 && tiresRotateTimer < 200) {
-        left = fromTireAngles[0];
-        right = fromTireAngles[1];
-        left.Cerp(toTireAngles[0], tiresRotateTimer / 200.f);
-        right.Cerp(toTireAngles[1], tiresRotateTimer / 200.f);
-
-        tiresRotateTimer += elapsedMsec;
-    }
-    else
-    {
-        left = toTireAngles[0];
-        right = toTireAngles[1];
-        tiresRotateTimer = -1;
-    }
+    left = fromTireAngles[0];
+    right = fromTireAngles[1];
+    left.Cerp(toTireAngles[0], 0.2f);
+    right.Cerp(toTireAngles[1], 0.2f);
 
     Vector3 forward = GetForward();
     Vector3 speedVector = speed;
@@ -329,6 +305,12 @@ void Kart::KeyPress(int key)
 void Kart::KeyRelease(int key)
 {
     pressedKeys &= ~(unsigned int)key;
+}
+
+void Kart::CirclePadState(s16 xVal, s16 yVal)
+{
+    xCirclePad = xVal / 156.f;
+    yCirclePad = yVal / 156.f;
 }
 
 Angle Kart::GetSpeedometerAngle(int elapsedMsec)
