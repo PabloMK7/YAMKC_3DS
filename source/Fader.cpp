@@ -18,3 +18,18 @@ void Fader::SetFade(float amount) {
     GetMaterial().SetCostantColor(0, setColor);
 }
 
+void Fader::SetTargetFade(float amount, int frames) {
+    targetFade = amount;
+    targetFrame = frames;
+    startFade = GetMaterial().GetConstantColor(0).a;
+    currentFrame = targetFrame;
+}
+
+void Fader::Calc() {
+    if (currentFrame == 0)
+        return;
+    float prog = currentFrame-- / (float)targetFrame;
+    float newFade = startFade + (targetFade - startFade) * prog;
+    SetFade(newFade);
+}
+

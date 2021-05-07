@@ -32,6 +32,7 @@ Collision* collision = nullptr;
 Speedometer* speedMeter = nullptr;
 Chronometer* chrono = nullptr;
 Sound* mainTheme = nullptr;
+Fader* mainFade = nullptr;
 
 #define LAMP_AMOUNT 4
 Lamp* courseLamps[LAMP_AMOUNT];
@@ -139,6 +140,7 @@ void sceneRender(C3D_RenderTarget* target, float iod)
 
     speedMeter->Draw();
     chrono->Draw();
+    mainFade->Draw();
 }
 
 unsigned int previousTime = 0;
@@ -168,6 +170,7 @@ void sceneCalc() {
         frameCount++;
     }
     chrono->Tick();
+    mainFade->Calc();
 }
 
 // Inicializaci�n de los objetos. 
@@ -210,6 +213,11 @@ void resourceInit() {
     mainTheme = new Sound("romfs:/audio/bgm/main_theme.bcwav", 1);
 
     chrono = new Chronometer();
+
+    mainFade = new Fader();
+    mainFade->GetScale() = Vector3(400.f, 240.f, 0.f);
+    mainFade->GetPosition() = Vector3(200.f, 120.f, 0.f);
+    mainFade->SetTargetFade(1.f, 60);
 }
 
 // Destrucci�n de los objetos.
@@ -226,6 +234,7 @@ void resourceExit() {
     if (chronometer) delete chronometer;
     if (mainTheme) delete mainTheme;
     if (chrono) delete chrono;
+    if (mainFade) delete mainFade;
     
 }
 
