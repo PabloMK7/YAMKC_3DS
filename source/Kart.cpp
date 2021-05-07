@@ -83,10 +83,12 @@ Kart::Kart(std::string kartName, std::string wheelName, std::string driverName, 
     grassSound = new Sound(GRASS_SHORT, 1);
     workingMotorSound->SetVolume(0.4f);
     turningSound->SetVolume(0.2f);
-    collisionSound->SetVolume(0.8f);
+    collisionSound->SetVolume(1.0f);
     grassSound->SetVolume(0.9f);
     isTurningLeft = false;
     isTurningRight = false;
+    isHittingAWall = false;
+    collisionSoundWasPlayed = false;
     // ------------- //
 }
 
@@ -386,6 +388,7 @@ void Kart::CalcCollision(Vector3 newKartPosition, bool goingBackwards)
 {
     float slowestGround = 1.f;
     Vector3 advance = newKartPosition - GetPosition();
+    bool hittingWall = false;
 
     CollisionResult col = collision->CheckSphere(newKartPosition + Vector3(0.f, 2.f, 0.f), 9.f);
     for (u32 j = 0; j < col.length; j++) {
@@ -393,6 +396,8 @@ void Kart::CalcCollision(Vector3 newKartPosition, bool goingBackwards)
         if (val.speedMultiplier < slowestGround)
             slowestGround = val.speedMultiplier;
         if (val.isWall) {
+            hittingWall |= val.isWall && speed.Magnitude() > 3.0f;
+
             Vector3 wallNormal = collision->GetNormal(col.prisms[j]->fNrmIdx, col.serverID[j]) * -1.f;
             wallNormal.Normalize();
             if ((speed).Dot(wallNormal) < 0) continue;
@@ -410,6 +415,7 @@ void Kart::CalcCollision(Vector3 newKartPosition, bool goingBackwards)
         advancedAmount = 0.f;
     GetPosition() = newKartPosition;
     collisionSpeedMult = slowestGround;
+    isHittingAWall = hittingWall;
 }
 
 // --- Sound --- //
@@ -460,6 +466,13 @@ void Kart::UpdateKartSounds() {
         }
     } else {
         if(grassSound->IsPlaying()) grassSound->Stop();
+    }
+
+    if(isHittingAWall && !collisionSoundWasPlayed) {
+        TriggerCollisionSound();
+        collisionSoundWasPlayed = true;
+    } else if(!isHittingAWall && collisionSoundWasPlayed) {
+        collisionSoundWasPlayed = false;
     }
 }
 
