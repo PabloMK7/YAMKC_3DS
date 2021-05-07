@@ -107,5 +107,7 @@ private:
 	bool isTurningRight;
 	void UpdateKartSounds();
 	void TriggerCollisionSound();
+	bool isHittingAWall;
+	bool collisionSoundWasPlayed;
 	// ------------- //
 };
