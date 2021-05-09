@@ -249,8 +249,7 @@ int main(int argc, char** argv)
     romfsInit();
     ndspInit();
     C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
-    //C2D_Init(C2D_DEFAULT_MAX_OBJECTS);
-    consoleInit(GFX_BOTTOM, NULL);
+    //consoleInit(GFX_BOTTOM, NULL);
     
     targetLeft = C3D_RenderTargetCreate(240 * 2, 400, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8); // Twice the size needed for anti-aliasing
     targetRight = C3D_RenderTargetCreate(240 * 2, 400, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8);
@@ -284,8 +283,8 @@ int main(int argc, char** argv)
             sceneTopRender(targetRight, iod);
         }
         C3D_RenderTargetClear(targetBottom, C3D_CLEAR_DEPTH, 0, 0);
-        //C3D_FrameDrawOn(targetBottom);
-        //sceneBottomRender(targetBottom);
+        C3D_FrameDrawOn(targetBottom);
+        sceneBottomRender(targetBottom);
         C3D_FrameEnd(0);
         if (hidKeysDown() & KEY_START)
             break;

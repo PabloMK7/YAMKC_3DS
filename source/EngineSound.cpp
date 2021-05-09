@@ -10,9 +10,9 @@ EngineSound::EngineSound(/* args */) :
 {
     speed = 0.f;
     prevSpeed = 0.f;
-    idleSound.SetMasterVolume(0.5f);
+    idleSound.SetMasterVolume(0.6f);
     startSound.SetMasterVolume(0.5f);
-    runSound.SetMasterVolume(0.4f);
+    runSound.SetMasterVolume(0.45f);
     endSound.SetMasterVolume(0.5f);
     idleSound.SetVolume(0.f);
     startSound.SetVolume(0.f);
@@ -99,7 +99,7 @@ void EngineSound::Calc(float newSpeed)
     else if (pitchBend > 1.f)
         pitchBend = 1.f;
 
-    float pitchAmount = 0.7f + pitchBend * 0.4f;
+    float pitchAmount = 0.65f + pitchBend * 0.45f;
     targetPitch = pitchAmount;
     runSound.SetPitch(targetPitch, true);
     startSound.SetPitch(targetPitch);

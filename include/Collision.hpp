@@ -37,6 +37,7 @@ public:
 		KCLAttr attr;
 		float speedMultiplier = 1.f;
 		bool isWall = false;
+		int roadType;
 
 		KCLValueProperties(u16 kclAttr);
 		

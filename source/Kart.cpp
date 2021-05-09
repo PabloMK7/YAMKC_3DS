@@ -75,21 +75,17 @@ Kart::Kart(std::string kartName, std::string wheelName, std::string driverName, 
     toTireAngles[0] = fromTireAngles[0];
     toTireAngles[1] = fromTireAngles[1];
 
-    engine = new EngineSound();
     // --- Sound --- //
-    idleMotorSound = new Sound(IDLE_MOTOR_SOUND, 1);
-    workingMotorSound = new Sound(MOVING_MOTOR_SOUND, 1);
-    turningSound = new Sound(SQUEAK_SOUND, 1);
-    collisionSound = new Sound(HIT_SOUND, 3);
-    grassSound = new Sound(GRASS_SHORT, 1);
-    workingMotorSound->SetVolume(0.4f);
-    turningSound->SetVolume(0.2f);
-    collisionSound->SetVolume(1.0f);
-    grassSound->SetVolume(0.9f);
-    isTurningLeft = false;
-    isTurningRight = false;
-    isHittingAWall = false;
-    collisionSoundWasPlayed = false;
+    engine = new EngineSound();
+    standStillSound = new Sound("romfs:/audio/kart/slide/standstill.bcwav", 1);
+    sandSound = new Sound("romfs:/audio/kart/offroad/sand.bcwav", 1);
+    grassSound = new Sound("romfs:/audio/kart/offroad/grass.bcwav", 1);
+    turningSound = new Sound("romfs:/audio/kart/slide/turn.bcwav", 1);
+    wallHitSound = new Sound("romfs:/audio/kart/wall/wall.bcwav", 1);
+    turningSound->SetMasterVolume(0.55f);
+    sandSound->SetMasterVolume(0.65f);
+    grassSound->SetMasterVolume(0.65f);
+    wallHitSound->SetMasterVolume(0.65f);
     // ------------- //
 }
 
@@ -100,14 +96,13 @@ Kart::~Kart()
     for (int i = 0; i < 4; i++)
         delete wheelObjs[i];
     delete shadowObj;
-    delete engine;
 
     // --- Sound --- //
-    delete idleMotorSound;
-    delete workingMotorSound;
+    delete engine;
+    delete standStillSound;
     delete turningSound;
-    delete collisionSound;
     delete grassSound;
+    delete sandSound;
     // ------------- //
 }
 
@@ -232,6 +227,8 @@ void Kart::Calc(int elapsedMsec)
         speed = Vector3(0.f, 0.f, 0.f);
     }
 
+    isStandStill = inPlaceDrift;
+
     Vector3 engineForce = forward * realAccelFactor;
     float realWheelResistanceFactor = wheelResistanceFactor + (1.f - collisionSpeedMult) * offroadFactor;
     Vector3 tireResistance = speedVector * -(realWheelResistanceFactor + (abs(right.AsDegrees()) / maxWheelTurnAngle) * turnWheelFrictionFactor);
@@ -243,6 +240,7 @@ void Kart::Calc(int elapsedMsec)
     Vector3 advanceNow;
     float wheelSpinAmount = 0.f;
     bool goingBackwards = false;
+    turningAmount = 0.f;
 
     if (inPlaceDrift) {
         Angle rotateAngle = Angle::FromDegrees((right.AsDegrees() / maxWheelTurnAngle) * inPlaceTurnFactor);
@@ -275,6 +273,8 @@ void Kart::Calc(int elapsedMsec)
         wheelObjs[0]->GetRotation().y = rotateAngle * maxWheelTurnAngle + defaultWheelRotations[0].y;
         wheelObjs[1]->GetRotation().y = rotateAngle * maxWheelTurnAngle + defaultWheelRotations[1].y;
 
+        turningAmount = fabsf(rotateAngle.AsRadians() / 0.0132f);
+
         Angle newAngle = Vector3(0.f, 0.f, -1.f).GetAngle(advanceNow);
         if (!isinf(newAngle.AsRadians()) && abs(advanceNow.GetAngle(forward).AsDegrees()) < 90.f)
             GetRotation().y = newAngle;
@@ -298,7 +298,7 @@ void Kart::Calc(int elapsedMsec)
     CalcCollision(newKartPosition, goingBackwards);
     engine->Calc(GetRealSpeedFactor(true));
     // --- Sound --- //
-    //UpdateKartSounds();
+    CalcSounds();
     // ------------- //
     prevPressedKeys = pressedKeys;
 }
@@ -380,16 +380,21 @@ void Kart::CalcCollision(Vector3 newKartPosition, bool goingBackwards)
 {
     float slowestGround = 1.f;
     Vector3 advance = newKartPosition - GetPosition();
-    bool hittingWall = false;
 
     CollisionResult col = collision->CheckSphere(newKartPosition + Vector3(0.f, 2.f, 0.f), 9.f);
     for (u32 j = 0; j < col.length; j++) {
         Collision::KCLValueProperties val(col.prisms[j]->attribute);
+        if (val.roadType >= 0 && val.roadType != currColType && !lastColChangeFrames) {
+            currColType = val.roadType;
+            lastColChangeFrames = 10;
+        }
         if (val.speedMultiplier < slowestGround)
             slowestGround = val.speedMultiplier;
         if (val.isWall) {
-            hittingWall |= val.isWall && speed.Magnitude() > 3.0f;
-
+            if (!prevHitWallFrames) {
+                justHitWall = true;
+                prevHitWallFrames = 20;
+            }
             Vector3 wallNormal = collision->GetNormal(col.prisms[j]->fNrmIdx, col.serverID[j]) * -1.f;
             wallNormal.Normalize();
             if ((speed).Dot(wallNormal) < 0) continue;
@@ -400,6 +405,8 @@ void Kart::CalcCollision(Vector3 newKartPosition, bool goingBackwards)
             }
         }
     }
+
+    isInAsphalt = slowestGround == 1.f;
     
     newKartPosition = GetPosition() + advance;
     advancedAmount = (newKartPosition - GetPosition()).Magnitude();
@@ -410,73 +417,76 @@ void Kart::CalcCollision(Vector3 newKartPosition, bool goingBackwards)
     }
     GetPosition() = newKartPosition;
     collisionSpeedMult = slowestGround;
-    isHittingAWall = hittingWall;
 }
 
 // --- Sound --- //
-void Kart::UpdateKartSounds() {
-    return;
-    if((pressedKeys & (unsigned int) KEY_A) | (pressedKeys & (unsigned int) KEY_B)) {
-        if(idleMotorSound->IsPlaying()) {
-            idleMotorSound->Stop();
+void Kart::CalcSounds() {
+    if (isStandStill && !wasStandStill && isInAsphalt) {
+        standStillSound->EnsurePlaying();
+        standStillSound->SetVolume(0.65f);
+    }
+    if (!isStandStill && wasStandStill) {
+        standStillSound->SetTargetVolume(0.f, 10);
+        standStillSound->SetTargetStop(10);
+    }
+    if (currColType != prevColType) {
+        if (currColType == 0) { // Road
+            sandSound->SetTargetVolume(0.f, 10);
+            sandSound->SetTargetStop(10);
+            grassSound->SetTargetVolume(0.f, 10);
+            grassSound->SetTargetStop(10);
+        } else if (currColType == 0x5) { // Offroad
+            sandSound->EnsurePlaying();
+            grassSound->SetTargetVolume(0.f, 10);
+            grassSound->SetTargetStop(10);
+        } else if (currColType == 0x6) { // Heavy offroad
+            grassSound->EnsurePlaying();
+            sandSound->SetTargetVolume(0.f, 10);
+            sandSound->SetTargetStop(10);
         }
-        if(!workingMotorSound->IsPlaying()) {
-            workingMotorSound->Play();
-        }
-    } else {
-        if(workingMotorSound->IsPlaying()) {
-            workingMotorSound->Stop();
-        }
-        if(!idleMotorSound->IsPlaying()) {
-            idleMotorSound->Play();
-        }
+
+    }
+    float realSpeedFactor = fabsf(GetRealSpeedFactor(true));
+    float offroadVol = std::min(realSpeedFactor / 20.f, 1.f);
+    if (currColType == 0x5) {
+        sandSound->SetVolume(offroadVol);
+    } else if (currColType == 0x6) {
+        grassSound->SetVolume(offroadVol);
     }
 
-    if((pressedKeys & (unsigned int) KEY_LEFT)) {
-        if(!turningSound->IsPlaying() && !isTurningLeft) {
-            turningSound->Play();
-            isTurningLeft = true;
-        }
-    } else {
-        if(isTurningLeft) {
-            isTurningLeft = false;
-        }
+    if (turningAmount > 0.75f && isTurningStopped && isInAsphalt && !isStandStill) {
+        turningSound->SetTargetVolume(1.f, 0);
+        turningSound->EnsurePlaying();
+        isTurningStopped = false;
+    } else if ((turningAmount <= 0.75f || !isInAsphalt || isStandStill) && !isTurningStopped) {
+        turningSound->SetTargetVolume(0.f, 10);
+        turningSound->SetTargetStop(10);
+        isTurningStopped = true;
     }
 
-    if((pressedKeys & (unsigned int) KEY_RIGHT)) {
-        if(!turningSound->IsPlaying() && !isTurningRight) {
-            turningSound->Play();
-            isTurningRight = true;
-        }
-    } else {
-        if(isTurningRight) {
-            isTurningRight = false;
-        }
-    }
+    float turningBySpeedMult = GetRealSpeedFactor(false) / 60.f;
+    turningSound->SetVolume(std::min(((std::max(turningAmount, 0.75f) - 0.75f) / 0.25f) * std::min(turningBySpeedMult * turningBySpeedMult, 1.f), 1.f));
 
-    if(collisionSpeedMult < 0.7f) {
-        if(speed.Magnitude() > 10.0f) {
-            if(!(grassSound->IsPlaying())) grassSound->Play();
-        } else {
-            grassSound->Stop();
-        }
-    } else {
-        if(grassSound->IsPlaying()) grassSound->Stop();
+    if (justHitWall && prevRealSpeed - realSpeedFactor > 5.f) {
+        wallHitSound->EnsurePlaying();
     }
+        
 
-    if(isHittingAWall && !collisionSoundWasPlayed) {
-        TriggerCollisionSound();
-        collisionSoundWasPlayed = true;
-    } else if(!isHittingAWall && collisionSoundWasPlayed) {
-        collisionSoundWasPlayed = false;
-    }
+    standStillSound->Tick();
+    turningSound->Tick();
+    sandSound->Tick();
+    grassSound->Tick();
+    wallHitSound->Tick();
+
+    wasStandStill = isStandStill;
+    prevColType = currColType;
+    if (!prevRealSpeedFrames) {
+        prevRealSpeed = realSpeedFactor;
+        prevRealSpeedFrames = 5;
+    }    
+    justHitWall = false;
+    if (lastColChangeFrames) lastColChangeFrames--;
+    if (prevHitWallFrames) prevHitWallFrames--;
+    if (prevRealSpeedFrames) prevRealSpeedFrames--;
 }
-
-void Kart::TriggerCollisionSound() {
-    return;
-    if(!collisionSound->IsPlaying()) {
-        collisionSound->Play();
-    }
-}
-
 // ------------- //

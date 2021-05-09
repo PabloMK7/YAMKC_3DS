@@ -48,7 +48,7 @@ Obj::Obj(std::string filename)
 {
     std::ifstream objFile(filename);
     if (!objFile.is_open())
-        std::cout << "Failed to open obj" << std::endl;
+        return;
 
     matLib = "";
     std::string line;

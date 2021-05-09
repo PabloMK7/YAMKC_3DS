@@ -36,7 +36,6 @@ private:
 	Obj* wheelObjs[4];
 	Obj* shadowObj;
 	Collision* collision;
-	EngineSound* engine;
 
 	Vector3 position;
 	Vector3 speed;
@@ -102,16 +101,24 @@ private:
 	void CalcCollision(Vector3 newKartPosition, bool goingBackwards);
 
 	// --- Sound --- //
-	Sound* idleMotorSound;
-	Sound* workingMotorSound;
-	Sound* turningSound;
-	Sound* collisionSound;
+	EngineSound* engine;
+	Sound* standStillSound;
 	Sound* grassSound;
-	bool isTurningLeft;
-	bool isTurningRight;
-	void UpdateKartSounds();
-	void TriggerCollisionSound();
-	bool isHittingAWall;
-	bool collisionSoundWasPlayed;
+	Sound* sandSound;
+	Sound* turningSound;
+	Sound* wallHitSound;
+	bool wasStandStill = false;
+	bool isStandStill = false;
+	bool isInAsphalt = true;
+	int currColType = 0;
+	int prevColType = 0;
+	int lastColChangeFrames = 0;
+	float turningAmount = 0.f;
+	bool isTurningStopped = true;
+	float prevRealSpeed = 0.f;
+	int prevRealSpeedFrames = 0;
+	int prevHitWallFrames = 0;
+	bool justHitWall = false;
+	void CalcSounds();
 	// ------------- //
 };

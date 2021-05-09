@@ -8,18 +8,22 @@ Collision::KCLValueProperties::KCLValueProperties(u16 val) : attr(val) {
 	case 0x0: // Road
 		speedMultiplier = 1.f;
 		isWall = false;
+		roadType = 0;
 		break;
 	case 0x5: // Off-road
 		speedMultiplier = 0.5f;
 		isWall = false;
+		roadType = 0x5;
 		break;
 	case 0x6: // Heavy Off-road
 		speedMultiplier = 0.2f;
 		isWall = false;
+		roadType = 0x6;
 		break;
 	case 0x10: // Wall type 1
 		speedMultiplier = 1.f;
 		isWall = true;
+		roadType = -1;
 		break;
 	default:
 		break;
