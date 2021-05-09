@@ -3,6 +3,7 @@
 #include "Obj.hpp"
 #include "Collision.hpp"
 #include "Sound.hpp"
+#include "EngineSound.hpp"
 class Kart
 {
 public:
@@ -17,7 +18,8 @@ public:
 	void KeyRelease(int key);
 	void CirclePadState(s16 xVal, s16 yVal);
 
-	Angle GetSpeedometerAngle(int elapsedMsec);
+	float GetRealSpeedFactor(bool includeBackwards);
+	Angle GetSpeedometerAngle();
 
 	Vector3& GetPosition();
 	Angle3& GetRotation();
@@ -33,7 +35,8 @@ private:
 	Obj* driverObj;
 	Obj* wheelObjs[4];
 	Obj* shadowObj;
-	Collision* collision;	
+	Collision* collision;
+	EngineSound* engine;
 
 	Vector3 position;
 	Vector3 speed;
@@ -43,6 +46,7 @@ private:
 	Vector3 cameraLookAt;
 
 	float advancedAmount;
+	float backAdvanceAmount;
 
 	static const Vector3 defaultWheelPositions[4];
 	static const Angle3 defaultWheelRotations[4];
@@ -76,7 +80,7 @@ private:
 	static const float kartBounceFactor;
 	static const float kartGrowFactor;
 	static const float offroadFactor;
-	static const float speedometerSpeedFactor;
+	static const float realSpeedFactor;
 
 	int totalElapsedTime = 0;
 	unsigned int pressedKeys;

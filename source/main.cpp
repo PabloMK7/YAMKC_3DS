@@ -174,7 +174,7 @@ void sceneCalc() {
     hidCircleRead(&pos);
     playerKart->CirclePadState(pos.dx, pos.dy);
     playerKart->Calc(elapsed);
-    speedMeter->SetNeedleAngle(playerKart->GetSpeedometerAngle(elapsed));
+    speedMeter->SetNeedleAngle(playerKart->GetSpeedometerAngle());
 
     if (frameCount >= FPS / 4) {
         timePassed = 0;
@@ -190,23 +190,11 @@ void sceneCalc() {
 
 // Inicializaci�n de los objetos. 
 void resourceInit() {
-    std::string currRes = "course_model";
-    std::cout << currRes << std::endl;
-
     collision = new Collision();
-
     courseModel = new Obj("romfs:/course_model/course_model.obj");
-    currRes = "sky_box_day";
-    std::cout << currRes << std::endl;
     skyboxModels[0] = new Obj("romfs:/course_model/skybox_model_day.obj");
-    currRes = "sky_box_night";
-    std::cout << currRes << std::endl;
     skyboxModels[1] = new Obj("romfs:/course_model/skybox_model_night.obj");
-    currRes = "collision";
-    std::cout << currRes << std::endl;
     collision->AddResource("romfs:/collision/collision.kcl", Vector3(0.f, 0.f, 0.f));
-    currRes = "kart";
-    std::cout << currRes << std::endl;
     playerKart = new Kart("romfs:/driver/kart.obj", "romfs:/driver/wheel.obj", "romfs:/driver/driver.obj", "romfs:/driver/shadow.obj", collision);
 
     for (int i = 0; i < LAMP_AMOUNT; i++) {
@@ -262,7 +250,7 @@ int main(int argc, char** argv)
     ndspInit();
     C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
     //C2D_Init(C2D_DEFAULT_MAX_OBJECTS);
-    //consoleInit(GFX_BOTTOM, NULL);
+    consoleInit(GFX_BOTTOM, NULL);
     
     targetLeft = C3D_RenderTargetCreate(240 * 2, 400, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8); // Twice the size needed for anti-aliasing
     targetRight = C3D_RenderTargetCreate(240 * 2, 400, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8);
@@ -296,8 +284,8 @@ int main(int argc, char** argv)
             sceneTopRender(targetRight, iod);
         }
         C3D_RenderTargetClear(targetBottom, C3D_CLEAR_DEPTH, 0, 0);
-        C3D_FrameDrawOn(targetBottom);
-        sceneBottomRender(targetBottom);
+        //C3D_FrameDrawOn(targetBottom);
+        //sceneBottomRender(targetBottom);
         C3D_FrameEnd(0);
         if (hidKeysDown() & KEY_START)
             break;

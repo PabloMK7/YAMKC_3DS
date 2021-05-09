@@ -49,21 +49,21 @@ APP_AUTHOR := PabloMK7, JoanCC, Ragnarok
 #---------------------------------------------------------------------------------
 ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
 
-#CFLAGS	:=	-ggdb -g3 -Wall -mword-relocations \
-#			-ffunction-sections \
-#			$(ARCH)
-
-CFLAGS	:=	-O2 -Wall -mword-relocations \
+CFLAGS	:=	-ggdb -g3 -Wall -mword-relocations \
 			-ffunction-sections \
 			$(ARCH)
+
+#CFLAGS	:=	-O2 -Wall -mword-relocations \
+#			-ffunction-sections \
+#			$(ARCH)
 
 CFLAGS	+=	$(INCLUDE) -DARM11 -D_3DS
 
 CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
 
 ASFLAGS	:=	-g $(ARCH)
-#LDFLAGS	=	-specs=3dsx.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
-LDFLAGS	=	-specs=3dsx.specs -O2 $(ARCH) -Wl,-Map,$(notdir $*.map)
+LDFLAGS	=	-specs=3dsx.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
+#LDFLAGS	=	-specs=3dsx.specs -O2 $(ARCH) -Wl,-Map,$(notdir $*.map)
 
 LIBS	:= -lcitro2d -lcwav -lcitro3d -lctru -lm
 

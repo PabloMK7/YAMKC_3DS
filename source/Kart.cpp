@@ -46,7 +46,7 @@ const float Kart::kartBounceFactor = 350.f;
 const float Kart::kartGrowFactor = 400.f;
 const float Kart::offroadFactor = 20.f;
 
-const float Kart::speedometerSpeedFactor = 0.2f;
+const float Kart::realSpeedFactor = 0.178f;
 
 Kart::Kart(std::string kartName, std::string wheelName, std::string driverName, std::string shadowName, Collision* col)
 {
@@ -56,6 +56,7 @@ Kart::Kart(std::string kartName, std::string wheelName, std::string driverName, 
     speed = Vector3();
     collision = col;
     advancedAmount = 0;
+    backAdvanceAmount = 0;
 
     kartObj = new Obj(kartName);
     driverObj = new Obj(driverName);
@@ -74,6 +75,7 @@ Kart::Kart(std::string kartName, std::string wheelName, std::string driverName, 
     toTireAngles[0] = fromTireAngles[0];
     toTireAngles[1] = fromTireAngles[1];
 
+    engine = new EngineSound();
     // --- Sound --- //
     idleMotorSound = new Sound(IDLE_MOTOR_SOUND, 1);
     workingMotorSound = new Sound(MOVING_MOTOR_SOUND, 1);
@@ -98,6 +100,7 @@ Kart::~Kart()
     for (int i = 0; i < 4; i++)
         delete wheelObjs[i];
     delete shadowObj;
+    delete engine;
 
     // --- Sound --- //
     delete idleMotorSound;
@@ -293,8 +296,9 @@ void Kart::Calc(int elapsedMsec)
 
     CalcCamera();
     CalcCollision(newKartPosition, goingBackwards);
+    engine->Calc(GetRealSpeedFactor(true));
     // --- Sound --- //
-    UpdateKartSounds();
+    //UpdateKartSounds();
     // ------------- //
     prevPressedKeys = pressedKeys;
 }
@@ -315,9 +319,15 @@ void Kart::CirclePadState(s16 xVal, s16 yVal)
     yCirclePad = yVal / 156.f;
 }
 
-Angle Kart::GetSpeedometerAngle(int elapsedMsec)
+float Kart::GetRealSpeedFactor(bool includeBackwards)
 {
-    float angle = (advancedAmount / (elapsedMsec / 1000.f)) * speedometerSpeedFactor;
+    float calcAmount = (backAdvanceAmount != 0 && includeBackwards) ? backAdvanceAmount : advancedAmount;
+    return (calcAmount / (16.666f / 1000.f)) * realSpeedFactor;
+}
+
+Angle Kart::GetSpeedometerAngle()
+{
+    float angle = GetRealSpeedFactor(false) * (9.f/8.f);
     if (angle > 90.f)
         angle = 90.f;
     return Angle::FromDegrees(angle);
@@ -393,8 +403,11 @@ void Kart::CalcCollision(Vector3 newKartPosition, bool goingBackwards)
     
     newKartPosition = GetPosition() + advance;
     advancedAmount = (newKartPosition - GetPosition()).Magnitude();
-    if (abs((newKartPosition - GetPosition()).GetAngle(GetForward()).AsRadians()) > Angle::DegreesToRadians(90.f) || goingBackwards)
+    backAdvanceAmount = 0.f;
+    if (abs((newKartPosition - GetPosition()).GetAngle(GetForward()).AsRadians()) > Angle::DegreesToRadians(90.f) || goingBackwards) {
+        backAdvanceAmount = -advancedAmount;
         advancedAmount = 0.f;
+    }
     GetPosition() = newKartPosition;
     collisionSpeedMult = slowestGround;
     isHittingAWall = hittingWall;
@@ -402,6 +415,7 @@ void Kart::CalcCollision(Vector3 newKartPosition, bool goingBackwards)
 
 // --- Sound --- //
 void Kart::UpdateKartSounds() {
+    return;
     if((pressedKeys & (unsigned int) KEY_A) | (pressedKeys & (unsigned int) KEY_B)) {
         if(idleMotorSound->IsPlaying()) {
             idleMotorSound->Stop();
@@ -459,6 +473,7 @@ void Kart::UpdateKartSounds() {
 }
 
 void Kart::TriggerCollisionSound() {
+    return;
     if(!collisionSound->IsPlaying()) {
         collisionSound->Play();
     }
