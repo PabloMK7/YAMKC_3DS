@@ -26,4 +26,5 @@ public:
     EngineSound(/* args */);
     ~EngineSound();
     void Calc(float newSpeed);
+    void Terminate();
 };

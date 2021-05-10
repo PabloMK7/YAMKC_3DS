@@ -17,5 +17,6 @@ public:
     void Tick();
     void Pause();
     void Play();
+    int GetElapsed();
     void Draw();
 };

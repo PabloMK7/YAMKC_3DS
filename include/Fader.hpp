@@ -1,3 +1,4 @@
+#pragma once
 #include "Plane.hpp"
 #include "Vector.hpp"
 #include "Material.hpp"

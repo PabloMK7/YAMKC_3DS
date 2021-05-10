@@ -3,8 +3,10 @@
 Fader::Fader() : Plane() {
     GetMaterial().SetTexCombineMode(Material::TexCombineModeNoTex, nullptr);
     GetMaterial().SetBlendMode(Material::BlendModeBlendedTransparency, nullptr);
-    GetMaterial().SetCostantColor(0, Color(0.f, 0.f, 0.f, 0.f));
+    GetMaterial().SetCostantColor(0, Color(0.f, 0.f, 0.f, 1.f));
+    currentFrame = 0;
 }
+
 Fader::~Fader() {}
 
 void Fader::SetColor(const Color& color) {
@@ -28,8 +30,8 @@ void Fader::SetTargetFade(float amount, int frames) {
 void Fader::Calc() {
     if (currentFrame == 0)
         return;
-    float prog = currentFrame-- / (float)targetFrame;
-    float newFade = startFade + (targetFade - startFade) * prog;
+    float prog = --currentFrame / (float)targetFrame;
+    float newFade = startFade + (targetFade - startFade) * (1.f - prog);
     SetFade(newFade);
 }
 

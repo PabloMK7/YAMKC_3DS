@@ -36,6 +36,7 @@ public:
 	public:
 		KCLAttr attr;
 		float speedMultiplier = 1.f;
+		int checkpointID = -1;
 		bool isWall = false;
 		int roadType;
 

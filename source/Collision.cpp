@@ -25,6 +25,9 @@ Collision::KCLValueProperties::KCLValueProperties(u16 val) : attr(val) {
 		isWall = true;
 		roadType = -1;
 		break;
+	case 0x0A: // Checkpoint
+		checkpointID = attr.shadow;
+		break;
 	default:
 		break;
 	}

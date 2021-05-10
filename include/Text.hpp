@@ -23,6 +23,8 @@ public:
     void SetColor(const Color& color, bool isTopColor);
     void SetBaseline(bool baseLineMode);
     void SetScreen(bool isTopScr);
+    void GetTextSize(float& sizeX, float& sizeY); // \n support not implemented
+    void CenterH(bool isTopScreen);
 
     void Draw();
 

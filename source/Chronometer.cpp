@@ -3,7 +3,7 @@
 
 Chronometer::Chronometer() : frames(0), isPaused(true) {
     text.SetPosition(Vector3(10.f, 6.f, 0.f));
-    text.SetColor(Color(1.f, 0.75f, 0.f, 1.f), true);
+    text.SetColor(Color(1.f, 0.5f, 0.f, 1.f), true);
     text.SetColor(Color(1.f, 1.f, 0.f, 1.f), false);
     text.SetScale(Vector2(0.85f, 0.85f));
     fade.GetPosition() = Vector3(5.f + 64.f, 5.f + 14.f, 0.f);
@@ -29,6 +29,10 @@ void Chronometer::Pause() {
 
 void Chronometer::Play() {
     isPaused = false;
+}
+
+int Chronometer::GetElapsed() {
+    return frames;
 }
 
 void Chronometer::Draw() {

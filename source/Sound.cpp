@@ -58,8 +58,10 @@ void Sound::StereoPlay() {
 }
 
 void Sound::Stop() {
-    if(isLoaded)
-        cwavStop(sound, 0, -1);
+    if(isLoaded) {
+        cwavStop(sound, -1, -1);
+        lChann = rChann = -1;
+    }
 }
 
 bool Sound::IsPlaying() {
@@ -92,6 +94,7 @@ void Sound::SetPitch(float amount, bool affect) {
 
 void Sound::SetMasterVolume(float volume) {
     masterVolume = volume;
+    SetVolume(sound->volume);
 }
 
 void Sound::SetVolume(float volume) {

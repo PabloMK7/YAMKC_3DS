@@ -10,10 +10,10 @@ EngineSound::EngineSound(/* args */) :
 {
     speed = 0.f;
     prevSpeed = 0.f;
-    idleSound.SetMasterVolume(0.6f);
-    startSound.SetMasterVolume(0.5f);
-    runSound.SetMasterVolume(0.45f);
-    endSound.SetMasterVolume(0.5f);
+    idleSound.SetMasterVolume(0.95f);
+    startSound.SetMasterVolume(0.95f);
+    runSound.SetMasterVolume(0.85f);
+    endSound.SetMasterVolume(0.95f);
     idleSound.SetVolume(0.f);
     startSound.SetVolume(0.f);
     runSound.SetVolume(0.f);
@@ -113,4 +113,11 @@ void EngineSound::Calc(float newSpeed)
     CalcStateMachine();
 
     prevSpeed = newSpeed;
+}
+
+void EngineSound::Terminate() {
+    idleSound.SetMasterVolume(0.f);
+    startSound.SetMasterVolume(0.f);
+    runSound.SetMasterVolume(0.f);
+    endSound.SetMasterVolume(0.f);
 }

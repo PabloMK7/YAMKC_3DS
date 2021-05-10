@@ -10,6 +10,10 @@
 #include "Text.hpp"
 #include "Chronometer.hpp"
 #include "BottomMap.hpp"
+#include "RaceEngine.hpp"
+#include "CountdownDisplay.hpp"
+#include "LapCounter.hpp"
+#include "EndingDisplay.hpp"
 #include <ctime>
 
 // Constantes FPS
@@ -18,6 +22,7 @@
 
 int windowW = 400;
 int windowH = 240;
+int g_renderMode = 0;
 
 C3D_RenderTarget* targetLeft;
 C3D_RenderTarget* targetRight;
@@ -33,9 +38,11 @@ Kart* playerKart = nullptr;
 Collision* collision = nullptr;
 Speedometer* speedMeter = nullptr;
 Chronometer* chrono = nullptr;
-Sound* mainTheme = nullptr;
 BottomMap* bottomMap = nullptr;
-Fader* mainFade = nullptr;
+RaceEngine* raceEngine = nullptr;
+CountdownDisplay* countdown = nullptr;
+LapCounter* lapCounter = nullptr;
+EndingDisplay* endingDisplay = nullptr;
 
 #define LAMP_AMOUNT 4
 Lamp* courseLamps[LAMP_AMOUNT];
@@ -56,8 +63,6 @@ bool isDayMode = true;
 bool isFogMode = false;
 Color dayGlobalAmbientColor = Color(0.85f, 0.85f, 0.85f);
 Color nightGlobalAmbientColor = Color(0.2f, 0.2f, 0.2f);
-
-Chronometer* chronometer = nullptr;
 
 /*
 void setLightFogMode(bool isDay) {
@@ -124,33 +129,47 @@ void setLightFogMode(bool isDay) {
 // Dibujado de los objetos.
 void sceneTopRender(C3D_RenderTarget* target, float iod)
 {
-    playerKart->UpdateViewPort(windowW, windowH, iod);
+    if (g_renderMode == 0) {
+        playerKart->UpdateViewPort(windowW, windowH, iod);
 
-    playerKart->UpdateCamera();
+        playerKart->UpdateCamera();
 
-    if (isDayMode && skyboxModels[0]) skyboxModels[0]->Draw();
-    else if (!isDayMode && skyboxModels[1]) skyboxModels[1]->Draw();
+        if (isDayMode && skyboxModels[0]) skyboxModels[0]->Draw();
+        else if (!isDayMode && skyboxModels[1]) skyboxModels[1]->Draw();
 
-    if (courseModel) courseModel->Draw();
+        if (courseModel) courseModel->Draw();
 
-    for (int i = 0; i < LAMP_AMOUNT; i++) {
-        courseLamps[i]->Draw();
+        for (int i = 0; i < LAMP_AMOUNT; i++) {
+            courseLamps[i]->Draw();
+        }
+
+        if (playerKart) playerKart->Draw();
+
+        Graphics::StartUIDraw(target);
+
+        speedMeter->Draw();
+        chrono->Draw();
+        countdown->Draw();
+    } else if (g_renderMode == 1) {
+        Graphics::StartUIDraw(target);
+        C3D_RenderTargetClear(target, C3D_CLEAR_COLOR, 0, 0);
+        endingDisplay->DrawTop();
     }
-
-    if (playerKart) playerKart->Draw();
-
-    Graphics::StartUIDraw(target);
-
-    speedMeter->Draw();
-    chrono->Draw();
-    mainFade->Draw();
+    raceEngine->Draw();
 }
 
 void sceneBottomRender(C3D_RenderTarget* target)
 {
-    Graphics::StartUIDraw(target);
-    bottomMap->Draw(playerKart->GetPosition(), playerKart->GetRotation().y);
-    mainFade->Draw();
+    if (g_renderMode == 0) {
+        Graphics::StartUIDraw(target);
+        bottomMap->Draw(playerKart->GetPosition(), playerKart->GetRotation().y);
+        lapCounter->Draw();
+    } else if (g_renderMode == 1) {
+        Graphics::StartUIDraw(target);
+        C3D_RenderTargetClear(target, C3D_CLEAR_COLOR, 0, 0);
+        endingDisplay->DrawBottom();
+    }
+    raceEngine->Draw();
 }
 
 unsigned int previousTime = 0;
@@ -166,26 +185,30 @@ void sceneCalc() {
     unsigned int elapsed = currentTime - previousTime;
     previousTime = currentTime;
 
-    // Llamada a la función calc con el tiempo transcurrido a cada objeto.
-    // De esta forma, cada objeto es responsable de actualizar sus par�metros.
-    playerKart->KeyPress(hidKeysDown());
-    playerKart->KeyRelease(hidKeysUp());
-    circlePosition pos;
-    hidCircleRead(&pos);
-    playerKart->CirclePadState(pos.dx, pos.dy);
-    playerKart->Calc(elapsed);
-    speedMeter->SetNeedleAngle(playerKart->GetSpeedometerAngle());
+    if (g_renderMode == 0) {
+        playerKart->KeyPress(hidKeysDown());
+        playerKart->KeyRelease(hidKeysUp());
+        circlePosition pos;
+        hidCircleRead(&pos);
+        playerKart->CirclePadState(pos.dx, pos.dy);
+        playerKart->Calc(elapsed);
+        speedMeter->SetNeedleAngle(playerKart->GetSpeedometerAngle());
 
-    if (frameCount >= FPS / 4) {
-        timePassed = 0;
-        frameCount = 0;
+        if (frameCount >= FPS / 4) {
+            timePassed = 0;
+            frameCount = 0;
+        }
+        else {
+            timePassed += elapsed;
+            frameCount++;
+        }
+        chrono->Tick();
+        countdown->Tick();
+    } else if (g_renderMode == 1) {
+
     }
-    else {
-        timePassed += elapsed;
-        frameCount++;
-    }
-    chrono->Tick();
-    mainFade->Calc();
+    
+    raceEngine->Calc();
 }
 
 // Inicializaci�n de los objetos. 
@@ -211,17 +234,12 @@ void resourceInit() {
 
     //setLightFogMode(isDayMode);
 
-    chronometer = new Chronometer();
-
-    mainTheme = new Sound("romfs:/audio/bgm/main_theme.bcwav", 1);
-
     chrono = new Chronometer();
+    countdown = new CountdownDisplay();
+    lapCounter = new LapCounter();
     bottomMap = new BottomMap();
-
-    mainFade = new Fader();
-    mainFade->GetScale() = Vector3(400.f, 240.f, 0.f);
-    mainFade->GetPosition() = Vector3(200.f, 120.f, 0.95f);
-    mainFade->SetTargetFade(1.f, 60);
+    raceEngine = new RaceEngine(playerKart, chrono, countdown, lapCounter);
+    endingDisplay = new EndingDisplay();
 }
 
 // Destrucci�n de los objetos.
@@ -235,11 +253,11 @@ void resourceExit() {
     if (playerKart) delete playerKart;
     if (speedMeter) delete speedMeter;
     if (collision) delete collision;
-    if (chronometer) delete chronometer;
-    if (mainTheme) delete mainTheme;
     if (chrono) delete chrono;
-    if (mainFade) delete mainFade;
     if (bottomMap) delete bottomMap;
+    if (raceEngine) delete raceEngine;
+    if (countdown) delete countdown;
+    if (endingDisplay) delete endingDisplay;
 }
 
 int main(int argc, char** argv)
@@ -261,10 +279,6 @@ int main(int argc, char** argv)
     Graphics::SceneInit();
     Text::Init();
     resourceInit();
-
-    mainTheme->SetVolume(0.4f);
-    mainTheme->StereoPlay();
-    chrono->Play();
     previousTime = 0;
     while (aptMainLoop())
     {

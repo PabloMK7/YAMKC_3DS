@@ -57,6 +57,7 @@ Kart::Kart(std::string kartName, std::string wheelName, std::string driverName, 
     collision = col;
     advancedAmount = 0;
     backAdvanceAmount = 0;
+    canDrive = false;
 
     kartObj = new Obj(kartName);
     driverObj = new Obj(driverName);
@@ -82,10 +83,10 @@ Kart::Kart(std::string kartName, std::string wheelName, std::string driverName, 
     grassSound = new Sound("romfs:/audio/kart/offroad/grass.bcwav", 1);
     turningSound = new Sound("romfs:/audio/kart/slide/turn.bcwav", 1);
     wallHitSound = new Sound("romfs:/audio/kart/wall/wall.bcwav", 1);
-    turningSound->SetMasterVolume(0.55f);
-    sandSound->SetMasterVolume(0.65f);
-    grassSound->SetMasterVolume(0.65f);
-    wallHitSound->SetMasterVolume(0.65f);
+    turningSound->SetMasterVolume(0.9f);
+    sandSound->SetMasterVolume(1.f);
+    grassSound->SetMasterVolume(1.f);
+    wallHitSound->SetMasterVolume(0.9f);
     // ------------- //
 }
 
@@ -194,11 +195,12 @@ void Kart::Calc(int elapsedMsec)
         kartObj->GetScale().z = (1.f + realGrowFactor * 0.1f);
     }
 
+    float circleH = canDrive ? xCirclePad : 0.f; 
 
     fromTireAngles[0] = wheelObjs[0]->GetRotation().y;
     fromTireAngles[1] = wheelObjs[1]->GetRotation().y;
-    toTireAngles[0] = defaultWheelRotations[0].y + Angle::FromDegrees(maxWheelTurnAngle) * xCirclePad * -1.f;
-    toTireAngles[1] = defaultWheelRotations[1].y + Angle::FromDegrees(maxWheelTurnAngle) * xCirclePad * -1.f;
+    toTireAngles[0] = defaultWheelRotations[0].y + Angle::FromDegrees(maxWheelTurnAngle) * circleH * -1.f;
+    toTireAngles[1] = defaultWheelRotations[1].y + Angle::FromDegrees(maxWheelTurnAngle) * circleH * -1.f;
 
     Angle left = Angle::Zero();
     Angle right = Angle::Zero();
@@ -215,14 +217,14 @@ void Kart::Calc(int elapsedMsec)
     bool inPlaceDrift = false;
 
     
-    if (pressedKeys & (unsigned int)KEY_B) {
+    if ((pressedKeys & (unsigned int)KEY_B) && canDrive) {
         realAccelFactor = engineAccelerationFactor * backwardsAccelerationRatioFactor;
-    } else if (pressedKeys & (unsigned int)KEY_A) {
+    } else if ((pressedKeys & (unsigned int)KEY_A) && canDrive) {
         realAccelFactor = engineAccelerationFactor;
         realMassFactor *= 1.2f;
     }
 
-    if (pressedKeys & (unsigned int)KEY_B && pressedKeys & (unsigned int)KEY_A && speed.Magnitude() < inPlaceStartMinSpeed) {
+    if ((pressedKeys & (unsigned int)KEY_B) && (pressedKeys & (unsigned int)KEY_A) && canDrive && speed.Magnitude() < inPlaceStartMinSpeed) {
         inPlaceDrift = true;
         speed = Vector3(0.f, 0.f, 0.f);
     }
@@ -297,6 +299,7 @@ void Kart::Calc(int elapsedMsec)
     CalcCamera();
     CalcCollision(newKartPosition, goingBackwards);
     engine->Calc(GetRealSpeedFactor(true));
+    CalcProgress();
     // --- Sound --- //
     CalcSounds();
     // ------------- //
@@ -317,6 +320,23 @@ void Kart::CirclePadState(s16 xVal, s16 yVal)
 {
     xCirclePad = xVal / 156.f;
     yCirclePad = yVal / 156.f;
+}
+
+void Kart::EnableDrive(bool enable) {
+    canDrive = enable;
+}
+
+int Kart::GetLap() {
+    return currentLap;
+}
+
+void Kart::StopSounds() {
+    standStillSound->SetMasterVolume(0.f);
+    sandSound->SetMasterVolume(0.f);
+    grassSound->SetMasterVolume(0.f);
+    turningSound->SetMasterVolume(0.f);
+    wallHitSound->SetMasterVolume(0.f);
+    engine->Terminate();
 }
 
 float Kart::GetRealSpeedFactor(bool includeBackwards)
@@ -384,6 +404,9 @@ void Kart::CalcCollision(Vector3 newKartPosition, bool goingBackwards)
     CollisionResult col = collision->CheckSphere(newKartPosition + Vector3(0.f, 2.f, 0.f), 9.f);
     for (u32 j = 0; j < col.length; j++) {
         Collision::KCLValueProperties val(col.prisms[j]->attribute);
+        if (val.checkpointID > -1 && val.checkpointID < 4) {
+            checkpoint = val.checkpointID;
+        }
         if (val.roadType >= 0 && val.roadType != currColType && !lastColChangeFrames) {
             currColType = val.roadType;
             lastColChangeFrames = 10;
@@ -419,11 +442,33 @@ void Kart::CalcCollision(Vector3 newKartPosition, bool goingBackwards)
     collisionSpeedMult = slowestGround;
 }
 
+void Kart::CalcProgress() {
+    if (checkpoint != prevCheckpoint) {
+
+        float integ;
+        float fract = modff(lapProgress, &integ);
+        
+        float newFract = checkpoint / 4.f;
+        if (fract == 0.75f && newFract == 0.f && !badLap) { // New lap
+            integ++;
+        } else if (fract == 0.f && newFract == 0.75f) {
+            badLap = true;
+        } else if (fract == 0.f && newFract == 0.25f) {
+            badLap = false;
+        }
+
+        fract = newFract;
+        lapProgress = integ + fract;
+        currentLap = integ;
+        prevCheckpoint = checkpoint;   
+    }
+}
+
 // --- Sound --- //
 void Kart::CalcSounds() {
     if (isStandStill && !wasStandStill && isInAsphalt) {
         standStillSound->EnsurePlaying();
-        standStillSound->SetVolume(0.65f);
+        standStillSound->SetVolume(1.f);
     }
     if (!isStandStill && wasStandStill) {
         standStillSound->SetTargetVolume(0.f, 10);

@@ -17,6 +17,10 @@ public:
 	void KeyPress(int key);
 	void KeyRelease(int key);
 	void CirclePadState(s16 xVal, s16 yVal);
+	void EnableDrive(bool canDrive);
+
+	int GetLap();
+	void StopSounds();
 
 	float GetRealSpeedFactor(bool includeBackwards);
 	Angle GetSpeedometerAngle();
@@ -82,6 +86,13 @@ private:
 	static const float realSpeedFactor;
 
 	int totalElapsedTime = 0;
+	bool canDrive;
+	int checkpoint = 0;
+	int prevCheckpoint = 0;
+	float lapProgress = 0.f;
+	int currentLap = 0;
+	bool badLap = false;
+
 	unsigned int pressedKeys;
 	unsigned int prevPressedKeys;
 	float xCirclePad;
@@ -99,6 +110,7 @@ private:
 	void CalcCamera();
 	unsigned int KeysJustPressed();
 	void CalcCollision(Vector3 newKartPosition, bool goingBackwards);
+	void CalcProgress();
 
 	// --- Sound --- //
 	EngineSound* engine;

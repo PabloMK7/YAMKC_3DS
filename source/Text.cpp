@@ -83,6 +83,40 @@ void Text::SetScreen(bool isTopScr) {
     topScreen = isTopScr;
 }
 
+void Text::GetTextSize(float& textX, float& textY) {
+    const u8      *c;
+    u32     code;
+    ssize_t units;
+    int     glyphIndex;
+    fontGlyphPos_s  data;
+
+    textX = 0.f;
+    textY = 0.f;
+    c = (const u8 *)text.c_str();
+
+    do
+    {
+        if (!*c) break;
+        units = decode_utf8(&code, c);
+        if (units == -1) break;
+        c += units;
+        if (code > 0)
+        {
+            glyphIndex = fontGlyphIndexFromCodePoint(NULL, code);
+            fontCalcGlyphPos(&data, NULL, glyphIndex, GLYPH_POS_CALC_VTXCOORD, scale.x, scale.y);
+            if (data.vtxcoord.bottom > textY) textY = data.vtxcoord.bottom;
+            textX += data.xAdvance;
+        }
+    } while (code > 0);
+}
+
+void Text::CenterH(bool isTopScreen) {
+    float sX, sY;
+    GetTextSize(sX, sY);
+    float scrSize = isTopScreen ? 400.f : 320.f;
+    position.x = (scrSize - sX) / 2.f;
+}
+
 void Text::Draw()
 {
     u32             flags;
