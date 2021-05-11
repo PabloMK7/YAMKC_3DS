@@ -1,6 +1,5 @@
 #pragma once
 #include "Obj.hpp"
-#include "Light.hpp"
 #include <atomic>
 #include "Collision.hpp"
 

@@ -27,6 +27,7 @@ RaceEngine::RaceEngine(Kart* playerKart, Chronometer* chrono, CountdownDisplay* 
 }
 
 RaceEngine::~RaceEngine() {
+    delete raceFader;
     delete bgmEngine;
     delete count321;
     delete countGo;

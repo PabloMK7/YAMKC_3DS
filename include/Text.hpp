@@ -21,6 +21,7 @@ public:
     void SetScale(const Vector2& scal);
     void SetText(const std::string& str);
     void SetColor(const Color& color, bool isTopColor);
+    Color& GetColor(bool isTopColor);
     void SetBaseline(bool baseLineMode);
     void SetScreen(bool isTopScr);
     void GetTextSize(float& sizeX, float& sizeY); // \n support not implemented

@@ -1,4 +1,5 @@
 #include "Graphics.hpp"
+#include "Material.hpp"
 #include "vshader_shbin.h"
 #include <stdlib.h>
 
@@ -32,6 +33,8 @@ void Graphics::SceneInit()
 
     // Initialize the vertex buffer
     InitVBO();
+
+	Material::InitFragmentLighting();
 }
 
 void Graphics::SceneExit(void)

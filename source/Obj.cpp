@@ -144,6 +144,8 @@ Obj::Obj(std::string filename)
             if (texCoords[i] != -1)
                 texCoord = objTexCoords[texCoords[i]];
             
+            normal.Normalize();
+
             vInfo[i].position.x = position.x;
             vInfo[i].position.y = position.y;
             vInfo[i].position.z = position.z;
@@ -241,30 +243,33 @@ void Obj::LoadMatlib(std::string filename)
         if (pieces.empty()) continue;
 
         if (pieces[0] == "newmtl") {
-	    if (pieces.size() != 2)
+	        if (pieces.size() != 2)
                 continue;
             currMat = Trim(pieces[1]);
         }
         else if (pieces[0] == "Kd") {
-	    if (pieces.size() != 4)
+	        if (pieces.size() != 4)
                 continue;
             float r = std::stof(pieces[1]);
             float g = std::stof(pieces[2]);
-            float b = std::stof(pieces[3]);          
+            float b = std::stof(pieces[3]);
+            GetMaterial(currMat).SetFragmentColor(Material::FragmentColor::DIFFUSE, Color(r, g, b));
         }
         else if (pieces[0] == "Ka") {
-	    if (pieces.size() != 4)
+	        if (pieces.size() != 4)
                 continue;
             float r = std::stof(pieces[1]);
             float g = std::stof(pieces[2]);
             float b = std::stof(pieces[3]);
+            GetMaterial(currMat).SetFragmentColor(Material::FragmentColor::AMBIENT, Color(r, g, b));
         }
         else if (pieces[0] == "Ks") {
-	    if (pieces.size() != 4)
+	        if (pieces.size() != 4)
                 continue;
             float r = std::stof(pieces[1]);
             float g = std::stof(pieces[2]);
             float b = std::stof(pieces[3]);
+            GetMaterial(currMat).SetFragmentColor(Material::FragmentColor::SPECULAR0, Color(r, g, b));
         }
         else if (pieces[0] == "map_Kd") {
 	    if (pieces.size() != 2)

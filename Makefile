@@ -40,7 +40,7 @@ GRAPHICS	:=	gfx
 ROMFS		:=	romfs
 GFXBUILD	:=	gfxbuild
 
-APP_TITLE   := YAMKC 3DS
+APP_TITLE   := YAMKC 3DS v0.2
 APP_DESCRIPTION := Yet Another Mario Kart Clone 3DS
 APP_AUTHOR := PabloMK7, JoanCC, Ragnarok
 

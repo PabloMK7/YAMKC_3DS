@@ -23,9 +23,9 @@ const float Kart::collisionSphereH = 11.45f;
 const Vector3 Kart::cameraOffset = Vector3(0, 36, 51);
 const Vector3 Kart::cameraLookAtOffset = Vector3(0, 23, 0);
 const float Kart::cameraFov = 55.f;
-const float Kart::cameraRearViewMultiplyFactor = -1.25f;
+const float Kart::cameraRearViewMultiplyFactor = -1.3f;
 const float Kart::cameraRotationCerpFactor = 0.025f;
-const float Kart::cameraPositionCerpFactor = 0.3f;
+const float Kart::cameraPositionCerpFactor = 0.65f;
 const float Kart::cameraInterOcularDistanceMultiplier = 2.3f;
 const float Kart::cameraFocalLength = 19.f;
 
@@ -37,7 +37,7 @@ const float Kart::kartMassFactor = 8.f;
 const float Kart::maxWheelTurnAngle = 19.f;
 const float Kart::turnWheelFrictionFactor = 1.f;
 const float Kart::turnBySpeedFactor = 210.f;
-const float Kart::maxTurnAmount = 0.9f;
+const float Kart::maxTurnAmount = 0.94f;
 const float Kart::inPlaceTurnFactor = 2.75f;
 const float Kart::inPlaceStartMinSpeed = 5.f;
 const float Kart::wheelSpinFactor = 6.f;
@@ -60,11 +60,15 @@ Kart::Kart(std::string kartName, std::string wheelName, std::string driverName, 
     canDrive = false;
 
     kartObj = new Obj(kartName);
+    kartObj->GetMaterial("mat_kart_body").SetFragmentMode(Material::FragmentModePhong, nullptr);
     driverObj = new Obj(driverName);
+    driverObj->GetMaterial("mat_driver_body").SetTextureWrapMode(GPU_MIRRORED_REPEAT, GPU_MIRRORED_REPEAT).SetFragmentMode(Material::FragmentModePhong, nullptr);
+    driverObj->GetMaterial("mat_driver_eyes").SetTextureWrapMode(GPU_MIRRORED_REPEAT, GPU_REPEAT).SetFragmentMode(Material::FragmentModePhong, nullptr);
     for (int i = 0; i < 4; i++) {
         wheelObjs[i] = new Obj(wheelName);
         wheelObjs[i]->GetPosition() = defaultWheelPositions[i];
         wheelObjs[i]->GetRotation() = defaultWheelRotations[i];
+        wheelObjs[i]->GetMaterial("mat_kart_wheel").SetFragmentMode(Material::FragmentModePhong, nullptr);
     }
     shadowObj = new Obj(shadowName);
     shadowObj->GetPosition() += Vector3(0.f, 0.15f, -0.5f);
@@ -84,7 +88,7 @@ Kart::Kart(std::string kartName, std::string wheelName, std::string driverName, 
     turningSound = new Sound("romfs:/audio/kart/slide/turn.bcwav", 1);
     wallHitSound = new Sound("romfs:/audio/kart/wall/wall.bcwav", 1);
     turningSound->SetMasterVolume(0.9f);
-    sandSound->SetMasterVolume(1.f);
+    sandSound->SetMasterVolume(1.5f);
     grassSound->SetMasterVolume(1.f);
     wallHitSound->SetMasterVolume(0.9f);
     // ------------- //
@@ -104,6 +108,7 @@ Kart::~Kart()
     delete turningSound;
     delete grassSound;
     delete sandSound;
+    delete wallHitSound;
     // ------------- //
 }
 
@@ -140,9 +145,9 @@ void Kart::CalcCamera()
     cameraLookAt = GetPosition() + cameraLookAtOffset;
 }
 
-void Kart::UpdateViewPort(int w, int h, float iod)
+void Kart::UpdateViewPort(float iod)
 {
-    float ratio = (float)w / h;
+    float ratio = 400.f / 240.f;
 
     C3D_Mtx* p = Graphics::GetProjectionMtx();
     Mtx_Identity(p);
@@ -401,7 +406,7 @@ void Kart::CalcCollision(Vector3 newKartPosition, bool goingBackwards)
     float slowestGround = 1.f;
     Vector3 advance = newKartPosition - GetPosition();
 
-    CollisionResult col = collision->CheckSphere(newKartPosition + Vector3(0.f, 2.f, 0.f), 9.f);
+    CollisionResult col = collision->CheckSphere(newKartPosition + Vector3(0.f, 2.f, 0.f), 11.f);
     for (u32 j = 0; j < col.length; j++) {
         Collision::KCLValueProperties val(col.prisms[j]->attribute);
         if (val.checkpointID > -1 && val.checkpointID < 4) {
@@ -416,11 +421,13 @@ void Kart::CalcCollision(Vector3 newKartPosition, bool goingBackwards)
         if (val.isWall) {
             if (!prevHitWallFrames) {
                 justHitWall = true;
-                prevHitWallFrames = 20;
+                prevHitWallFrames = 40;
             }
+            if (col.prisms[j]->fNrmIdx < 0 || col.serverID[j] < 0) continue;
             Vector3 wallNormal = collision->GetNormal(col.prisms[j]->fNrmIdx, col.serverID[j]) * -1.f;
-            wallNormal.Normalize();
-            if ((speed).Dot(wallNormal) < 0) continue;
+            wallNormal.y = 0.f;
+            if (!wallNormal.Normalize()) continue;
+            if ((speed).Dot(wallNormal) <= 0) continue;
             float dotVal = wallNormal.Dot(advance);
             if (dotVal > 0) {
                 advance -= wallNormal * dotVal;
@@ -430,6 +437,7 @@ void Kart::CalcCollision(Vector3 newKartPosition, bool goingBackwards)
     }
 
     isInAsphalt = slowestGround == 1.f;
+    if (advance.Magnitude() > 100.f) advance = Vector3();
     
     newKartPosition = GetPosition() + advance;
     advancedAmount = (newKartPosition - GetPosition()).Magnitude();
@@ -492,7 +500,7 @@ void Kart::CalcSounds() {
 
     }
     float realSpeedFactor = fabsf(GetRealSpeedFactor(true));
-    float offroadVol = std::min(realSpeedFactor / 20.f, 1.f);
+    float offroadVol = isStandStill ? 1.f : std::min(realSpeedFactor / 20.f, 1.f);
     if (currColType == 0x5) {
         sandSound->SetVolume(offroadVol);
     } else if (currColType == 0x6) {

@@ -35,7 +35,7 @@ Texture::Texture(const std::string& fileName, bool toVram)
 	correctyLoaded = loadTextureFromFile(fileName.c_str(), &textureData, toVram);
 	isTransparent = textureHasAlpha(textureData.fmt);
 	Wrap(GPU_REPEAT, GPU_REPEAT);
-	C3D_TexSetFilter(&textureData, GPU_LINEAR, GPU_NEAREST);
+	C3D_TexSetFilter(&textureData, GPU_LINEAR, GPU_LINEAR);
 }
 
 Texture::~Texture()

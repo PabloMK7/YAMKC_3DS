@@ -4,7 +4,6 @@
 #include "Color.hpp"
 #include "Obj.hpp"
 #include "Kart.hpp"
-#include "Light.hpp"
 #include "Lamp.hpp"
 #include "Speedometer.hpp"
 #include "Text.hpp"
@@ -20,8 +19,6 @@
 #define FPS 60
 #define SPF 1.f / FPS
 
-int windowW = 400;
-int windowH = 240;
 int g_renderMode = 0;
 
 C3D_RenderTarget* targetLeft;
@@ -33,7 +30,7 @@ C3D_RenderTarget* targetBottom;
 	GX_TRANSFER_SCALING(GX_TRANSFER_SCALE_X))
 
 Obj* courseModel = nullptr;
-Obj* skyboxModels[2] = { nullptr, nullptr };
+Obj* skyboxModel = nullptr;
 Kart* playerKart = nullptr;
 Collision* collision = nullptr;
 Speedometer* speedMeter = nullptr;
@@ -55,95 +52,23 @@ Vector3 lampPositions[LAMP_AMOUNT] = {
 Angle3 lampRotations[LAMP_AMOUNT] = {
     Angle3(Angle::Zero(), Angle::Zero(), Angle::Zero()),
     Angle3(Angle::Zero(), Angle::Zero(), Angle::Zero()),
-    Angle3(Angle::Zero(), Angle::FromDegrees(32.724f), Angle::Zero()),
-    Angle3(Angle::Zero(), Angle::FromDegrees(-16.907f), Angle::Zero())
+    Angle3(Angle::Zero(), Angle::Zero(), Angle::Zero()),
+    Angle3(Angle::Zero(), Angle::Zero(), Angle::Zero())
 };
 
-bool isDayMode = true;
-bool isFogMode = false;
-Color dayGlobalAmbientColor = Color(0.85f, 0.85f, 0.85f);
-Color nightGlobalAmbientColor = Color(0.2f, 0.2f, 0.2f);
-
-/*
-void setLightFogMode(bool isDay) {
-    
-    static bool prevDayMode = isDayMode;
-    float scale;
-
-    isDayMode = isDay;
-
-    glFogf(GL_FOG_DENSITY, isFogMode ? 0.001f : 0.00005f);
-    if (isDay)
-    {
-        GLfloat fogColor[4] = { 1.f, 1.f, 1.f, 1.0f };
-        glFogfv(GL_FOG_COLOR, fogColor);
-
-        glClearColor(1.f, 1.f, 1.f, 1.f);
-    }
-    else
-    {
-        GLfloat fogColor[4] = { 0.1f, 0.15f, 0.17f, 1.f };
-        glFogfv(GL_FOG_COLOR, fogColor);
-        if (isFogMode) skyboxModels[1]->GetMaterial("mat_moon").GetColor(Obj::Material::ColorType::DIFFUSE) = Color(0.35f, 0.35f, 0.35f);
-        else skyboxModels[1]->GetMaterial("mat_moon").GetColor(Obj::Material::ColorType::DIFFUSE) = Color(1.f, 1.f, 1.f);
-
-        glClearColor(0.f, 0.f, 0.f, 1.f);
-    }
-
-
-    if (!prevDayMode && isDay)
-        scale = 1.f / 0.55f;
-    else if (prevDayMode && !isDay)
-        scale = 0.55f;
-    else
-        scale = 1.f;
-
-    for (auto& mat : courseModel->Materials()) {
-        mat.GetColor(Obj::Material::ColorType::AMBIENT).Scale(scale, false);
-        mat.GetColor(Obj::Material::ColorType::DIFFUSE).Scale(scale, false);
-    }
-    for (auto& mat : playerKart->GetDriverObj()->Materials()) {
-        mat.GetColor(Obj::Material::ColorType::AMBIENT).Scale(scale, false);
-        mat.GetColor(Obj::Material::ColorType::DIFFUSE).Scale(scale, false);
-    }
-    for (auto& mat : playerKart->GetKartObj()->Materials()) {
-        mat.GetColor(Obj::Material::ColorType::AMBIENT).Scale(scale, false);
-        mat.GetColor(Obj::Material::ColorType::DIFFUSE).Scale(scale, false);
-    }
-    for (int i = 0; i < 4; i++) {
-        for (auto& mat : playerKart->GetWheelObjs()[i]->Materials()) {
-            mat.GetColor(Obj::Material::ColorType::AMBIENT).Scale(scale, false);
-            mat.GetColor(Obj::Material::ColorType::DIFFUSE).Scale(scale, false);
-        }
-    }
-
-    for (int i = 0; i < LAMP_AMOUNT; i++) {
-        courseLamps[i]->setDayMode(isDay);
-    }
-
-    prevDayMode = isDay;
-    
-}
-*/
-
-// Dibujado de los objetos.
 void sceneTopRender(C3D_RenderTarget* target, float iod)
 {
     if (g_renderMode == 0) {
-        playerKart->UpdateViewPort(windowW, windowH, iod);
 
+        playerKart->UpdateViewPort(iod);
         playerKart->UpdateCamera();
 
-        if (isDayMode && skyboxModels[0]) skyboxModels[0]->Draw();
-        else if (!isDayMode && skyboxModels[1]) skyboxModels[1]->Draw();
-
-        if (courseModel) courseModel->Draw();
-
+        skyboxModel->Draw();
+        courseModel->Draw();
         for (int i = 0; i < LAMP_AMOUNT; i++) {
             courseLamps[i]->Draw();
         }
-
-        if (playerKart) playerKart->Draw();
+        playerKart->Draw();
 
         Graphics::StartUIDraw(target);
 
@@ -172,74 +97,48 @@ void sceneBottomRender(C3D_RenderTarget* target)
     raceEngine->Draw();
 }
 
-unsigned int previousTime = 0;
-unsigned int currentTime = 0;
-
-// Callback ejecutada cada x mseg.
 void sceneCalc() {
 
-    static int frameCount = 0;
-    static int timePassed = 0;
-
-    currentTime = previousTime + (SPF) * 1000.f;
-    unsigned int elapsed = currentTime - previousTime;
-    previousTime = currentTime;
-
     if (g_renderMode == 0) {
+        circlePosition pos;
         playerKart->KeyPress(hidKeysDown());
         playerKart->KeyRelease(hidKeysUp());
-        circlePosition pos;
         hidCircleRead(&pos);
         playerKart->CirclePadState(pos.dx, pos.dy);
-        playerKart->Calc(elapsed);
+        playerKart->Calc(SPF * 1000.f);
         speedMeter->SetNeedleAngle(playerKart->GetSpeedometerAngle());
-
-        if (frameCount >= FPS / 4) {
-            timePassed = 0;
-            frameCount = 0;
-        }
-        else {
-            timePassed += elapsed;
-            frameCount++;
-        }
         chrono->Tick();
         countdown->Tick();
     } else if (g_renderMode == 1) {
-
+        // Nothing to calc.
     }
     
     raceEngine->Calc();
 }
-
-// Inicializaci�n de los objetos. 
+ 
 void resourceInit() {
-    collision = new Collision();
     courseModel = new Obj("romfs:/course_model/course_model.obj");
-    skyboxModels[0] = new Obj("romfs:/course_model/skybox_model_day.obj");
-    skyboxModels[1] = new Obj("romfs:/course_model/skybox_model_night.obj");
-    collision->AddResource("romfs:/collision/collision.kcl", Vector3(0.f, 0.f, 0.f));
-    playerKart = new Kart("romfs:/driver/kart.obj", "romfs:/driver/wheel.obj", "romfs:/driver/driver.obj", "romfs:/driver/shadow.obj", collision);
+    skyboxModel = new Obj("romfs:/course_model/skybox_model_day.obj");
 
-    for (int i = 0; i < LAMP_AMOUNT; i++) {
-        Vector3 scale = Vector3(1.f, 1.f, 1.f);
-        courseLamps[i] = new Lamp(lampPositions[i], lampRotations[i], scale, *collision);
-    }
+    collision = new Collision();
+
+    playerKart = new Kart("romfs:/driver/kart.obj", "romfs:/driver/wheel.obj", "romfs:/driver/driver.obj", "romfs:/driver/shadow.obj", collision);
+    playerKart->GetScale() = Vector3(1.35f, 1.35f, 1.35f);
 
     speedMeter = new Speedometer();
-
-    playerKart->GetScale() = Vector3(1.2f, 1.2f, 1.2f);
-    playerKart->GetDriverObj()->GetMaterial("mat_driver_body").SetTextureWrapMode(GPU_MIRRORED_REPEAT, GPU_MIRRORED_REPEAT);
-    playerKart->GetDriverObj()->GetMaterial("mat_driver_eyes").SetTextureWrapMode(GPU_MIRRORED_REPEAT, GPU_REPEAT);
-    //skyboxModels[1]->GetMaterial("mat_moon").ForceDisableFog(true);
-
-    //setLightFogMode(isDayMode);
-
     chrono = new Chronometer();
     countdown = new CountdownDisplay();
     lapCounter = new LapCounter();
     bottomMap = new BottomMap();
     raceEngine = new RaceEngine(playerKart, chrono, countdown, lapCounter);
     endingDisplay = new EndingDisplay();
+
+    collision->AddResource("romfs:/collision/collision.kcl", Vector3(0.f, 0.f, 0.f), Angle3());    
+
+    for (int i = 0; i < LAMP_AMOUNT; i++) {
+        Vector3 scale = Vector3(1.f, 1.f, 1.f);
+        courseLamps[i] = new Lamp(lampPositions[i], lampRotations[i], scale, *collision);
+    }
 }
 
 // Destrucci�n de los objetos.
@@ -248,8 +147,7 @@ void resourceExit() {
         if (courseLamps[i]) delete courseLamps[i];
     }
     if (courseModel) delete courseModel;
-    if (skyboxModels[0]) delete skyboxModels[0];
-    if (skyboxModels[1]) delete skyboxModels[1];
+    if (skyboxModel) delete skyboxModel;
     if (playerKart) delete playerKart;
     if (speedMeter) delete speedMeter;
     if (collision) delete collision;
@@ -278,8 +176,8 @@ int main(int argc, char** argv)
 
     Graphics::SceneInit();
     Text::Init();
+
     resourceInit();
-    previousTime = 0;
     while (aptMainLoop())
     {
 		float iod = osGet3DSliderState();

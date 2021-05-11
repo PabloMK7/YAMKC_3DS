@@ -7,6 +7,7 @@ private:
     Text yourTime{6};
     Text theTime{10};
     Text gameName{30};
+    Text version{15};
     Text credits{50};
     Text pressToExit{50};
 public:

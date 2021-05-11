@@ -10,8 +10,15 @@ Material::Material(std::string name)
     texture = nullptr;
     SetBlendMode(BlendModeOpacity, nullptr);
     SetTexCombineMode(TexCombineModeNoTex, nullptr);
+    SetFragmentMode(FragmentModeNone, nullptr);
     for (u32 i = 0; i < sizeof(constantColors) / sizeof(Color); i++)
         SetCostantColor(i, Color(1.f, 1.f, 1.f, 1.f));
+
+    SetFragmentColor(FragmentColor::DIFFUSE, Color(1.f, 1.f, 1.f));
+    SetFragmentColor(FragmentColor::AMBIENT, Color(0.f, 0.f, 0.f));
+    SetFragmentColor(FragmentColor::SPECULAR0, Color(0.3f, 0.3f, 0.3f));
+    SetFragmentColor(FragmentColor::SPECULAR1, Color(0.0f, 0.0f, 0.0f));
+    SetFragmentColor(FragmentColor::EMISSION, Color(0.f, 0.f, 0.f));
 }
 
 Material::~Material()
@@ -53,6 +60,11 @@ Material& Material::SetCostantColor(u32 id, const Color& color)
     return (*this);
 }
 
+Material& Material::SetFragmentColor(FragmentColor id, const Color& color) {
+    fragmentColors[(u32)id] = color;
+    return (*this);
+}
+
 static Color defaultColor;
 const Color& Material::GetConstantColor(u32 id)
 {
@@ -60,6 +72,10 @@ const Color& Material::GetConstantColor(u32 id)
         return constantColors[id];
     else
         return defaultColor;
+}
+
+const Color& Material::GetFragmentColor(FragmentColor id) {
+    return fragmentColors[(u32)id];
 }
 
 Graphics::VertexArray& Material::GetVertexArray()
@@ -77,6 +93,7 @@ void Material::RunMaterialCallbacks()
 {
     tMode(*this, texCombineUsrData);
     bMode(*this, blendUsrData);
+    fMode(*this, fragModeUsrData);
 }
 
 void Material::Draw()
@@ -154,8 +171,14 @@ void Material::TexCombineModeDeafult(Material& mat, void* data)
     C3D_TexEnvInit(env);
     C3D_TexEnvSrc(env, C3D_Both, GPU_PREVIOUS, GPU_TEXTURE0, GPU_CONSTANT); // previous_operation * texture0 (last arg not used)
     C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
+    env = C3D_GetTexEnv(2);
+    C3D_TexEnvInit(env);
+    if (mat.fMode != FragmentModeNone) {
+        C3D_TexEnvSrc(env, C3D_RGB, GPU_FRAGMENT_PRIMARY_COLOR, GPU_FRAGMENT_SECONDARY_COLOR, GPU_PREVIOUS); // (primary + secondary) * previous_operation
+        C3D_TexEnvFunc(env, C3D_RGB, GPU_ADD_MULTIPLY);
+    }
     
-    for (int i = 2; i < 5; i++)
+    for (int i = 3; i < 5; i++)
         C3D_TexEnvInit(C3D_GetTexEnv(i));
 }
 
@@ -176,7 +199,7 @@ void Material::TexCombineModeFont(Material& mat, void* data) // Fonts only have 
     C3D_TexEnv *env = C3D_GetTexEnv(0);
     C3D_TexEnvInit(env);
     C3D_TexEnvSrc(env, C3D_RGB, GPU_PRIMARY_COLOR, GPU_CONSTANT, GPU_CONSTANT); // RGB = vertex color * costant color (last arg not used)
-    C3D_TexEnvSrc(env, C3D_Alpha, GPU_TEXTURE0, GPU_PRIMARY_COLOR, GPU_CONSTANT); // Alpha = texture alpha * vertex alpha (last arg not used)
+    C3D_TexEnvSrc(env, C3D_Alpha, GPU_PRIMARY_COLOR, GPU_TEXTURE0, GPU_CONSTANT); // Alpha = vertex alpha * texture alpha (last arg not used)
     C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
     C3D_TexEnvColor(env, mat.GetConstantColor(0).AsABGR());
 
@@ -189,4 +212,51 @@ Material& Material::SetTexCombineMode(TexCombineMode mode, void* data)
     tMode = mode;
     texCombineUsrData = data;
     return (*this);
+}
+
+static C3D_FVec g_lightVec;
+static C3D_LightLut g_lut_Phong;
+
+void Material::FragmentModeNone(Material& mat, void* data)
+{
+    C3D_LightEnvInit(&mat.lightEnv);
+	C3D_LightEnvBind(&mat.lightEnv);
+}
+
+void Material::FragmentModePhong(Material& mat, void* data)
+{
+    C3D_LightEnvInit(&mat.lightEnv);
+	C3D_LightEnvBind(&mat.lightEnv);
+    C3D_Material c3dMat;
+    c3dMat.ambient[2] = mat.fragmentColors[0].r;
+    c3dMat.ambient[1] = mat.fragmentColors[0].g;
+    c3dMat.ambient[0] = mat.fragmentColors[0].b;
+    c3dMat.diffuse[2] = mat.fragmentColors[1].r;
+    c3dMat.diffuse[1] = mat.fragmentColors[1].g;
+    c3dMat.diffuse[0] = mat.fragmentColors[1].b;
+    c3dMat.specular0[2] = mat.fragmentColors[2].r;
+    c3dMat.specular0[1] = mat.fragmentColors[2].g;
+    c3dMat.specular0[0] = mat.fragmentColors[2].b;
+    c3dMat.specular1[2] = mat.fragmentColors[3].r;
+    c3dMat.specular1[1] = mat.fragmentColors[3].g;
+    c3dMat.specular1[0] = mat.fragmentColors[3].b;
+    c3dMat.emission[2] = mat.fragmentColors[4].r;
+    c3dMat.emission[1] = mat.fragmentColors[4].g;
+    c3dMat.emission[0] = mat.fragmentColors[4].b;
+    C3D_LightEnvMaterial(&mat.lightEnv, &c3dMat);
+    C3D_LightEnvLut(&mat.lightEnv, GPU_LUT_D0, GPU_LUTINPUT_LN, false, &g_lut_Phong);
+    C3D_LightInit(&mat.light, &mat.lightEnv);
+	C3D_LightColor(&mat.light, 1.0, 1.0, 1.0);
+	C3D_LightPosition(&mat.light, &g_lightVec);
+}
+
+Material& Material::SetFragmentMode(FragmentMode mode, void* data) {
+    fMode = mode;
+    fragModeUsrData = data;
+    return (*this);
+}
+
+void Material::InitFragmentLighting() {
+    LightLut_Phong(&g_lut_Phong, 30);
+    g_lightVec = FVec4_New(0.0f, -1.f, 0.f, 1.0f);
 }

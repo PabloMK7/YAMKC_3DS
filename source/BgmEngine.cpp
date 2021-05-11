@@ -17,6 +17,7 @@ BgmEngine::~BgmEngine() {
     delete startBgm;
     delete mainBgm;
     delete finishBgm;
+    delete finalLapBgm;
 }
 
 void BgmEngine::PlayBGM(BgmEngine::BgmType bgm) {

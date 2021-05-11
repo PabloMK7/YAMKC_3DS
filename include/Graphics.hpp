@@ -73,7 +73,7 @@ private:
     static void ExitVBO(void);
     
     // This is the maximum amount of vertices that can be loaded at the same time. Raise if needed.
-    static constexpr size_t MAX_VERTEX_COUNT = 50000;
+    static constexpr size_t MAX_VERTEX_COUNT = 30000;
 
     static DVLB_s* vshader_dvlb;
     static shaderProgram_s program;

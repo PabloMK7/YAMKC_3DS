@@ -26,7 +26,6 @@ bool Sound::IsLoaded() {
 }
 
 void Sound::Play() {
-    lastPlayFrames = 5;
     if(isLoaded) {
         float bak = sound->volume;
         sound->volume *= masterVolume;
@@ -65,7 +64,6 @@ void Sound::Stop() {
 }
 
 bool Sound::IsPlaying() {
-    if (lastPlayFrames) return true;
     if(isLoaded) {
         return cwavIsPlaying(sound);
     } else {
@@ -159,7 +157,6 @@ void Sound::SetTargetStop(int frames) {
 }
 
 void Sound::Tick() {
-    if (lastPlayFrames) lastPlayFrames--;
     if (currVolFrame != 0) {
         float prog = 1.f - (--currVolFrame / (float)targetVolFrame);
         float newVol = fromVolAmount + (toVolAmount - fromVolAmount) * prog;

@@ -333,10 +333,11 @@ public:
         return Dot(*this);
     }
 
-    inline void Normalize() {
+    inline bool Normalize() {
         float mag = Magnitude();
         if (mag != 0.f)
             *this /= mag;
+        return mag != 0.f;
     }
 
     Angle GetAngle(const Vector3& other) {

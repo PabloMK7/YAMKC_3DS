@@ -25,7 +25,7 @@ public:
 	};
 
 	Collision();
-	void AddResource(const std::string& file, const Vector3& origin);
+	void AddResource(const std::string& file, const Vector3& origin, const Angle3& rotation);
 	~Collision();
 	CollisionResult CheckSphere(const Vector3& center, float radius);
 	inline Vector3 GetNormal(u32 normalIndex, u32 serverID) {return entities[serverID]->server->GetNormal(normalIndex);}
@@ -50,9 +50,16 @@ private:
 			KCollisionServer* server;
 			kcol_resource_t* kclRes;
 			Vector3 origin;
+			Angle3 rotation;
 			
-			CollisionEntity(void* kclBuffer, Vector3 orig) : origin(orig) {
-				kclRes = (kcol_resource_t*)kclBuffer;
+			CollisionEntity(const std::string& kclFile, Vector3 orig, Angle3 rot) : origin(orig), rotation(rot) {
+				FILE* f = fopen(kclFile.c_str(), "rb");
+				fseek(f, 0, SEEK_END);
+				u32 fSize = ftell(f);
+				fseek(f, 0, SEEK_SET);
+				kclRes = (kcol_resource_t*)::operator new(fSize);
+				fread(kclRes, 1, fSize, f);
+				fclose(f);
 				server = new KCollisionServer(kclRes);
 			}
 			~CollisionEntity() {

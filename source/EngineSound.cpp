@@ -18,6 +18,8 @@ EngineSound::EngineSound(/* args */) :
     startSound.SetVolume(0.f);
     runSound.SetVolume(0.f);
     endSound.SetVolume(0.f);
+    idleSound.Play();
+    runSound.Play();
     state = StateMachine::NONE;
     prevState = StateMachine::NONE;
 }
@@ -71,13 +73,6 @@ void EngineSound::Calc(float newSpeed)
     bool isBack = newSpeed < 0.f;
     newSpeed = fabsf(newSpeed);
     bool accelerating = newSpeed > prevSpeed;
-
-    if (soundStartFrames == 20)
-        idleSound.Play();
-    if (soundStartFrames == 10)
-        runSound.Play();
-
-    soundStartFrames--;
 
     if (state == StateMachine::NONE) {
         state = StateMachine::IDLE;

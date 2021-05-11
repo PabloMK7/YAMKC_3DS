@@ -11,7 +11,7 @@ public:
 	~Kart();
 
 	void UpdateCamera();
-	void UpdateViewPort(int w, int h, float iod);
+	void UpdateViewPort(float iod);
 	void Draw();
 	void Calc(int elapsedMsec);
 	void KeyPress(int key);

@@ -17,7 +17,6 @@ private:
     float speed;
     float prevSpeed;
     float targetPitch = 1.f;
-    int soundStartFrames = 30;
     StateMachine state;
     StateMachine prevState;
     void CalcStateMachine();

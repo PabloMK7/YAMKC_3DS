@@ -15,6 +15,10 @@ CountdownDisplay::~CountdownDisplay() {}
 
 void CountdownDisplay::Tick() {
     if (frameCounter) {
+        float alpha = (frameCounter - 55) / 5.f;
+        if (alpha < 0.f) alpha = 0.f;
+        text.GetColor(true).a = 1.f - alpha;
+        text.GetColor(false).a = 1.f - alpha;
         float prog = frameCounter / 60.f;
         text.SetScale(Vector2(4.f * prog, 4.f * prog));
         float sizeX, sizeY;

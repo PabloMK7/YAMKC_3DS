@@ -33,7 +33,7 @@ void Text::Terminate() {
 }
 
 Text::Text(u32 maxChars) {
-    vArray = (Graphics::VertexArray**)malloc(sizeof(Graphics::VertexArray*) * maxChars);
+    vArray = new Graphics::VertexArray*[maxChars];
     for (u32 j = 0; j < maxChars; j++)
     {
         vArray[j] = Graphics::VertexArray::Create();
@@ -53,7 +53,7 @@ Text::Text(u32 maxChars) {
 Text::~Text() {
     for (u32 i = 0; i < maxCharacters; i++)
         Graphics::VertexArray::Dispose(vArray[i]);
-    free(vArray);
+    delete[] vArray;
 }
 
 void Text::SetPosition(const Vector3& pos) {
@@ -73,6 +73,13 @@ void Text::SetColor(const Color& color, bool isTopColor) {
         topColor = color;
     else
         botColor = color;
+}
+
+Color& Text::GetColor(bool isTopColor) {
+    if (isTopColor)
+        return topColor;
+    else
+        return botColor;
 }
 
 void Text::SetBaseline(bool baseLineMode) {

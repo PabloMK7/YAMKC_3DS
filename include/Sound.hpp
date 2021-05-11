@@ -27,7 +27,6 @@ class Sound {
     CWAV* sound;
     bool isLoaded;
     float masterVolume = 1.f;
-    int lastPlayFrames = 0;
     int lChann = -1, rChann = -1;
     int targetVolFrame, targetPitchFrame, targetDPitchFrame;
     int currVolFrame = 0, currPitchFrame = 0, currDPitchFrame = 0, currStopFrame = 0;
