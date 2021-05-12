@@ -4,7 +4,6 @@
 #include "Vector.hpp"
 #include "Color.hpp"
 #include "Texture.hpp"
-#include "Graphics.hpp"
 #include "Material.hpp"
 
 class Obj
