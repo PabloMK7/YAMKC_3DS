@@ -1,5 +1,5 @@
 ## License
-Copyright (c) 2020-2021 PabloMK7
+Copyright (c) 2020-2021 PabloMK7, Ragnarok, JoanCC 
 
 This software is provided 'as-is', without any express or implied warranty. In
 no event will the authors be held liable for any damages arising from the use of
@@ -20,5 +20,5 @@ the following restrictions:
 3.  This notice may not be removed or altered from any source distribution.
 
 ## Notice
-**Yoshi name and geometry is property of Nintendo. The usage of this property
+**Yoshi name, geometry and images, kart engine sounds and the second lap jingle are property of Nintendo. The usage of this property
 falls under fair use for research and educational purposes.**
