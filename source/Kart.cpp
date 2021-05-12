@@ -1,6 +1,5 @@
 #include "Kart.hpp"
 #include <iostream>
-#include "SoundLibrary.hpp"
 
 const Vector3 Kart::defaultWheelPositions[4] = {
     Vector3(-4.524f, 2.129f, -5.311f), // Front-left
