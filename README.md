@@ -11,7 +11,7 @@ You can check the following [Youtube Video](https://youtu.be/bqOL-XtQ2Nk) showca
 This project is a continuation of the Windows OpenGL game [Yet Another Mario Kart Clone](https://github.com/mariohackandglitch/YAMKC).
 
 ## Download
-You can download the latest version from the [Releases](releases/latest) page.
+You can download the latest version from the [Releases](https://github.com/mariohackandglitch/YAMKC_3DS/releases/latest) page.
 
 ## Credits
 
