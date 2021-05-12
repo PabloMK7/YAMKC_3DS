@@ -30,7 +30,8 @@ public:
 
     static void SceneInit(void);
     static void SceneExit(void);
-
+    
+    static void Start3DDraw(C3D_RenderTarget* target, float iod);
     static void StartUIDraw(C3D_RenderTarget* target);
 
     class VertexArray

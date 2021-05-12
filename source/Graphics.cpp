@@ -1,6 +1,7 @@
 #include "Graphics.hpp"
 #include "Material.hpp"
 #include "vshader_shbin.h"
+#include "Vector.hpp"
 #include <stdlib.h>
 
 DVLB_s* Graphics::vshader_dvlb = nullptr;
@@ -51,13 +52,26 @@ static const C3D_FVec laPos = {0.f, 1.f, 0.f, 0.f};
 static const C3D_FVec laLookAt = {0.f, 0.f, 0.f, 0.f};
 static const C3D_FVec laUp = {0.f, 0.f, 1.f, 0.f};
 
+static const float cameraInterOcularDistanceMultiplier = 2.3f;
+static const float cameraFocalLength = 19.f;
+static const float cameraFov = 55.f;
+
+void Graphics::Start3DDraw(C3D_RenderTarget* target, float iod)
+{
+	C3D_RenderTargetClear(target, C3D_CLEAR_DEPTH, 0, 0);
+
+    C3D_Mtx* p = Graphics::GetProjectionMtx();
+    Mtx_PerspStereoTilt(p, Angle::DegreesToRadians(cameraFov), 400.f / 240.f, 20, 10000, iod * cameraInterOcularDistanceMultiplier, cameraFocalLength, false);
+    Graphics::UpdateProjectionMtx();
+}
+
 void Graphics::StartUIDraw(C3D_RenderTarget* target)
 {
     C3D_RenderTargetClear(target, C3D_CLEAR_DEPTH, 0, 0);
 
-   	Mtx_Identity(Graphics::GetModelViewMtx());
 	Mtx_OrthoTilt(Graphics::GetProjectionMtx(), 0.0f, target->screen == GFX_TOP ? 400.0f : 320.f, 240.0f, 0.0f, 1.f, -1.0f, true);
-	
+	Mtx_Identity(Graphics::GetModelViewMtx());
+
     Graphics::UpdateProjectionMtx();
 }
 

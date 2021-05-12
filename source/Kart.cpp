@@ -22,12 +22,10 @@ const float Kart::collisionSphereH = 11.45f;
 
 const Vector3 Kart::cameraOffset = Vector3(0, 36, 51);
 const Vector3 Kart::cameraLookAtOffset = Vector3(0, 23, 0);
-const float Kart::cameraFov = 55.f;
 const float Kart::cameraRearViewMultiplyFactor = -1.3f;
 const float Kart::cameraRotationCerpFactor = 0.025f;
 const float Kart::cameraPositionCerpFactor = 0.65f;
-const float Kart::cameraInterOcularDistanceMultiplier = 2.3f;
-const float Kart::cameraFocalLength = 19.f;
+
 
 const float Kart::engineAccelerationFactor = 2500.f;
 const float Kart::backwardsAccelerationRatioFactor = -0.35f;
@@ -143,16 +141,6 @@ void Kart::CalcCamera()
     cameraPos.Rotate(oldRotation, GetPosition());
     currCameraPos.Cerp(cameraPos, shouldCerp ? cameraPositionCerpFactor : 1.f);
     cameraLookAt = GetPosition() + cameraLookAtOffset;
-}
-
-void Kart::UpdateViewPort(float iod)
-{
-    float ratio = 400.f / 240.f;
-
-    C3D_Mtx* p = Graphics::GetProjectionMtx();
-    Mtx_Identity(p);
-    Mtx_PerspStereoTilt(p, Angle::DegreesToRadians(cameraFov), ratio, 20, 10000, iod * cameraInterOcularDistanceMultiplier, cameraFocalLength, false);
-    Graphics::UpdateProjectionMtx();
 }
 
 void Kart::Draw()

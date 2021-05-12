@@ -11,7 +11,6 @@ public:
 	~Kart();
 
 	void UpdateCamera();
-	void UpdateViewPort(float iod);
 	void Draw();
 	void Calc(int elapsedMsec);
 	void KeyPress(int key);
@@ -60,12 +59,9 @@ private:
 
 	static const Vector3 cameraOffset;
 	static const Vector3 cameraLookAtOffset;
-	static const float cameraFov;
 	static const float cameraRearViewMultiplyFactor;
 	static const float cameraRotationCerpFactor;
 	static const float cameraPositionCerpFactor;
-	static const float cameraInterOcularDistanceMultiplier;
-	static const float cameraFocalLength;
 
 	static const float engineAccelerationFactor;
 	static const float backwardsAccelerationRatioFactor;

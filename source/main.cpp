@@ -60,7 +60,8 @@ void sceneTopRender(C3D_RenderTarget* target, float iod)
 {
     if (g_renderMode == 0) {
 
-        playerKart->UpdateViewPort(iod);
+        Graphics::Start3DDraw(target, iod);
+        
         playerKart->UpdateCamera();
 
         skyboxModel->Draw();
@@ -185,16 +186,13 @@ int main(int argc, char** argv)
         hidScanInput();
         sceneCalc();
         C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
-        C3D_RenderTargetClear(targetLeft, C3D_CLEAR_DEPTH, 0, 0);
         C3D_FrameDrawOn(targetLeft);
         sceneTopRender(targetLeft, -iod);
         if (iod > 0.0f)
         {
-            C3D_RenderTargetClear(targetRight, C3D_CLEAR_DEPTH, 0, 0);
             C3D_FrameDrawOn(targetRight);
             sceneTopRender(targetRight, iod);
         }
-        C3D_RenderTargetClear(targetBottom, C3D_CLEAR_DEPTH, 0, 0);
         C3D_FrameDrawOn(targetBottom);
         sceneBottomRender(targetBottom);
         C3D_FrameEnd(0);
