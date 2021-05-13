@@ -16,6 +16,7 @@ u32 Graphics::VertexArray::currIndex = 0;
 
 void Graphics::SceneInit()
 {
+	C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
     // Load the vertex shader, create a shader program and bind it
 	vshader_dvlb = DVLB_ParseFile((u32*)vshader_shbin, vshader_shbin_size);
 	shaderProgramInit(&program);
@@ -40,12 +41,14 @@ void Graphics::SceneInit()
 
 void Graphics::SceneExit(void)
 {
-	// Exit the vertex buffer
-	ExitVBO();
+	// Exit C3D
+	C3D_Fini();
 	// Free shader program
 	shaderProgramFree(&program);
 	// Free DVLB
 	DVLB_Free(vshader_dvlb);
+	// Exit the vertex buffer
+	ExitVBO();
 }
 
 static const C3D_FVec laPos = {0.f, 1.f, 0.f, 0.f};

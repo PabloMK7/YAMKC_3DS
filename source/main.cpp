@@ -165,7 +165,8 @@ int main(int argc, char** argv)
     gfxSet3D(true);
     romfsInit();
     ndspInit();
-    C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
+    
+    Graphics::SceneInit();
     //consoleInit(GFX_BOTTOM, NULL);
     
     targetLeft = C3D_RenderTargetCreate(240 * 2, 400, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8); // Twice the size needed for anti-aliasing
@@ -175,7 +176,6 @@ int main(int argc, char** argv)
     C3D_RenderTargetSetOutput(targetRight, GFX_TOP, GFX_RIGHT, DISPLAY_TRANSFER_FLAGS);
     C3D_RenderTargetSetOutput(targetBottom, GFX_BOTTOM, GFX_LEFT, DISPLAY_TRANSFER_FLAGS);
 
-    Graphics::SceneInit();
     Text::Init();
 
     resourceInit();
@@ -204,8 +204,8 @@ int main(int argc, char** argv)
     Text::Terminate();
     Graphics::SceneExit();
 
-    C3D_Fini();
     ndspExit();
     romfsExit();
+    gfxExit();
     return 0;
 }
