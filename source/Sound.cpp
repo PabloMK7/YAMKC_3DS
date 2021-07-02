@@ -1,7 +1,5 @@
 #include "Sound.hpp"
 #include <3ds.h>
-#include <cwav.h>
-#include <cwav_file.h>
 #include "cstring"
 
 static bool loadSoundFromFile(const char* fileName, CWAV* sound, int simulPlays) {

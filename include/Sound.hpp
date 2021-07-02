@@ -2,7 +2,7 @@
 #include <string>
 #include <3ds.h>
 
-#include <cwav_file.h>
+#include <cwav.h>
 
 class Sound {
     public:
